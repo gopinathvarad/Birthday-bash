@@ -2,7 +2,7 @@
 
 A mobile-first, single-page birthday experience built with React, Vite, Tailwind CSS, and Framer Motion. It combines a scrapbook-style memory map, a relationship quiz, a birthday message, instrumental music, and a timed five-surprise finale.
 
-The site also includes optimized photography, a custom favicon, and a 1200×630 social-sharing preview image.
+The site also includes mobile-sized WebP photography, a custom favicon, and a 1200×630 social-sharing preview image. Original JPEG photographs remain preserved in `public/`, while the live experience serves the smaller WebP versions.
 
 ## Experience
 
