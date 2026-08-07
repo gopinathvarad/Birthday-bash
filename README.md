@@ -65,6 +65,8 @@ The finale timer uses these browser storage keys:
 
 Clearing browser site data resets the experience. Because the website is entirely static, the timer is a playful client-side lock rather than a tamper-proof security control.
 
+Before presenting the site, use the footer's **Thanos reset** button. It clears quiz completion, visited memories, revealed surprise tickets, the one-hour countdown, music playback, modal state, and the URL hash, then returns to the welcome screen and question one.
+
 ## Deployment
 
 The website has no backend and can be deployed to any static host.
@@ -78,7 +80,15 @@ Connect the GitHub repository and use:
 
 ### GitHub Pages
 
-For a project site hosted at `https://USERNAME.github.io/REPOSITORY/`, configure Vite's `base` option and update root-relative public asset paths before deploying. A root-domain deployment does not require that repository prefix.
+The included `.github/workflows/deploy-pages.yml` workflow builds and deploys the site automatically whenever `main` is updated. It supplies `/Birthday-bash/` as Vite's production base path while local and Sites builds continue to use `/`.
+
+After GitHub Pages is enabled with **GitHub Actions** as its source, the live URL is:
+
+`https://gopinathvarad.github.io/Birthday-bash/`
+
+### OpenAI Sites
+
+The production build also creates the lightweight Cloudflare Worker entry point required by Sites. Hosting metadata lives in `.openai/hosting.json`; do not replace its `project_id` after the first deployment.
 
 ## Privacy
 
