@@ -1,5 +1,7 @@
 // Ritika's Memory Arcade — edit this one file to adjust copy, answers, and tickets.
 // Quiz answer indices are zero-based: 0 is the first choice, 1 the second, and so on.
+export const publicAsset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
+
 export const memoryData = {
   site: {
     herName: "Ritika",
@@ -13,7 +15,7 @@ export const memoryData = {
     enterLabel: "Start your birthday adventure ✦",
     music: {
       title: "Happy Birthday — instrumental",
-      src: "/audio/happy-birthday-instrumental.mp3?v=1",
+      src: publicAsset("/audio/happy-birthday-instrumental.mp3?v=1"),
     },
     theme: {
       paper: "#fffaf0",
@@ -35,7 +37,7 @@ export const memoryData = {
       date: "THE GROUP ADVENTURE",
       icon: "✈",
       position: { x: 21, y: 7 },
-      photo: "/photos/02-scotland.jpg?v=1",
+      photo: publicAsset("/photos/02-scotland.jpg?v=1"),
       photoPortrait: true,
       caption: "One nervous flight and an unforgettable New Year.",
       story:
@@ -48,7 +50,7 @@ export const memoryData = {
       date: "OUR FIRST TRIP TOGETHER",
       icon: "🐧",
       position: { x: 75, y: 20 },
-      photo: "/photos/01-birmingham.jpg?v=2",
+      photo: publicAsset("/photos/01-birmingham.jpg?v=2"),
       photoPortrait: true,
       caption: "Penguins, a lovely lunch, and our very first trip together.",
       story:
@@ -61,7 +63,7 @@ export const memoryData = {
       date: "IKEA TO ROBIN HOOD",
       icon: "🏹",
       position: { x: 27, y: 33 },
-      photo: "/photos/04-nottingham.jpg",
+      photo: publicAsset("/photos/04-nottingham.jpg"),
       photoPortrait: true,
       caption: "IKEA wandering, Robin Hood, and a well-earned beer.",
       story:
@@ -74,7 +76,7 @@ export const memoryData = {
       date: "LONDON ZOO",
       icon: "🦒",
       position: { x: 76, y: 46 },
-      photo: "/photos/06-london-zoo.jpg?v=1",
+      photo: publicAsset("/photos/06-london-zoo.jpg?v=1"),
       photoPortrait: true,
       caption: "A full day with the animals you could not wait to meet.",
       story:
@@ -87,7 +89,7 @@ export const memoryData = {
       date: "THE BEACH & THE RIDE",
       icon: "🎡",
       position: { x: 24, y: 59 },
-      photo: "/photos/03-brighton.jpg?v=1",
+      photo: publicAsset("/photos/03-brighton.jpg?v=1"),
       photoPortrait: true,
       caption: "A dream beach day—and one ride you will never forget.",
       story:
@@ -100,7 +102,7 @@ export const memoryData = {
       date: "CANARY WHARF, LONDON",
       icon: "☀",
       position: { x: 74, y: 73 },
-      photo: "/photos/05-canary-wharf.jpg?v=1",
+      photo: publicAsset("/photos/05-canary-wharf.jpg?v=1"),
       photoPortrait: true,
       caption: "Too hot at home, so London became our evening plan.",
       story:
@@ -113,7 +115,7 @@ export const memoryData = {
       date: "RESTAURANTS & CAFÉS",
       icon: "☕",
       position: { x: 31, y: 88 },
-      photo: "/photos/07-london-food.jpg?v=1",
+      photo: publicAsset("/photos/07-london-food.jpg?v=1"),
       photoPortrait: true,
       caption: "So many meals, cafés, conversations, and reasons to order dessert.",
       story:
@@ -191,7 +193,7 @@ export const memoryData = {
       redemption: "Say your favourite spell and open the first gift.",
       code: "WITCH-AGED-26",
       icon: "✧",
-      image: "/surprises/harry-potter-wand.jpg",
+      image: publicAsset("/surprises/harry-potter-wand.jpg"),
       imageAlt: "An elegant magical wand presented in a velvet gift box",
     },
     {
@@ -204,7 +206,7 @@ export const memoryData = {
       redemption: "Bring yourself, your camera, and absolutely no fear of heights.",
       code: "SKY-HIGH-26",
       icon: "✦",
-      image: "/surprises/the-shard.jpg",
+      image: publicAsset("/surprises/the-shard.jpg"),
       imageAlt: "A cinematic evening view from The Shard over London",
     },
     {
@@ -217,7 +219,7 @@ export const memoryData = {
       redemption: "Arrive hungry. Choosing only one dish is not required.",
       code: "SAAPADU-READY",
       icon: "🍚",
-      image: "/surprises/south-indian-lunch.jpg",
+      image: publicAsset("/surprises/south-indian-lunch.jpg"),
       imageAlt: "An elegant South Indian vegetarian meal served on a banana leaf",
     },
     {
@@ -230,7 +232,7 @@ export const memoryData = {
       redemption: "Meet at the pier and let London provide the scenery.",
       code: "RITIKA-SETS-SAIL",
       icon: "⚓",
-      image: "/surprises/thames-cruise.jpg",
+      image: publicAsset("/surprises/thames-cruise.jpg"),
       imageAlt: "A romantic evening boat cruising along the Thames in London",
     },
     {
@@ -243,7 +245,7 @@ export const memoryData = {
       redemption: "Wait for your owl—and prepare for a properly magical day.",
       code: "PLATFORM-9¾",
       icon: "⚡",
-      image: "/surprises/harry-potter-studio.jpg",
+      image: publicAsset("/surprises/harry-potter-studio.jpg"),
       imageAlt: "A cinematic magical film studio interior with floating candles",
     },
   ],

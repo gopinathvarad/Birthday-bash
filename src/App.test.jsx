@@ -62,4 +62,28 @@ describe("Memory Arcade", () => {
     expect(screen.getByRole("heading", { name: "A Date Above London" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /surprise 3 is locked/i })).toBeDisabled();
   });
+
+  it("uses the Thanos reset to erase quiz and timer progress and return to question one", () => {
+    localStorage.setItem("memory-arcade-unlocked", "true");
+    localStorage.setItem("memory-arcade-surprise-progress-v1", JSON.stringify({
+      revealedCount: 1,
+      nextUnlockAt: Date.now() + 60 * 60 * 1000,
+    }));
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
+    fireEvent.click(screen.getByRole("button", { name: /open memory 01/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Close memory" }));
+    expect(screen.getByText("♥ 1 / 7 visited")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /thanos reset/i }));
+
+    expect(localStorage.getItem("memory-arcade-unlocked")).toBeNull();
+    expect(localStorage.getItem("memory-arcade-surprise-progress-v1")).toBeNull();
+    expect(screen.getByRole("button", { name: /start your birthday adventure/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
+    expect(screen.getByRole("heading", { name: "Which animal is Ritika most frightened of?" })).toBeInTheDocument();
+    expect(screen.getByLabelText("0 of 5 questions complete")).toBeInTheDocument();
+    expect(screen.getByText("♥ 0 / 7 visited")).toBeInTheDocument();
+  });
 });

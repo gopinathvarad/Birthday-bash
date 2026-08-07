@@ -1,6 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { memoryData } from "./memoryData";
+import { memoryData, publicAsset } from "./memoryData";
 
 const STORAGE_KEY = "memory-arcade-unlocked";
 const SURPRISE_PROGRESS_KEY = "memory-arcade-surprise-progress-v1";
@@ -72,7 +72,7 @@ function useBirthdayMusic() {
     audioRef.current = null;
   }, []);
 
-  return { playing, error, onToggle: toggle };
+  return { playing, error, onToggle: toggle, stop };
 }
 
 function useDialog(open, onClose) {
@@ -678,13 +678,20 @@ function App() {
     window.setTimeout(() => document.getElementById("top")?.focus(), 150);
   };
 
-  const replay = () => {
-    localStorage.removeItem(STORAGE_KEY);
+  const thanosReset = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(SURPRISE_PROGRESS_KEY);
+    } catch {
+      // The in-memory reset still works when browser storage is unavailable.
+    }
+    music.stop();
     setUnlocked(false);
     setFinaleOpen(false);
     setWelcomeOpen(true);
     setRunId((value) => value + 1);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+    window.scrollTo({ top: 0, behavior: "auto" });
   };
 
   const themeStyle = Object.fromEntries(
@@ -708,14 +715,14 @@ function App() {
             <div className="hero-polaroids">
               <figure className="mini-polaroid back hero-photo hero-photo-secondary">
                 <img
-                  src="/photos/ritika-title-harry-potter.jpeg?v=1"
+                  src={publicAsset("/photos/ritika-title-harry-potter.jpeg?v=1")}
                   alt="Ritika smiling at Platform Nine and Three-Quarters"
                 />
                 <figcaption>off to Hogwarts ⚡</figcaption>
               </figure>
               <figure className="mini-polaroid front hero-photo">
                 <img
-                  src="/photos/ritika-title.jpeg"
+                  src={publicAsset("/photos/ritika-title.jpeg")}
                   alt="Ritika smiling beneath glowing lights and trees"
                 />
                 <figcaption>the birthday star ✦</figcaption>
@@ -730,7 +737,16 @@ function App() {
         </main>
         <footer>
           <p>Made for {memoryData.site.herNickname}, by {memoryData.site.yourName}.</p>
-          <button type="button" onClick={replay}>↻ Replay the arcade</button>
+          <button
+            type="button"
+            className="thanos-reset"
+            onClick={thanosReset}
+            aria-label="Thanos reset: erase all Memory Arcade progress and return to the welcome screen"
+          >
+            <span aria-hidden="true">🫰</span>
+            <strong>Thanos reset</strong>
+            <small>erase every test and start from the beginning</small>
+          </button>
         </footer>
       </div>
       <AnimatePresence>{finaleOpen && <FinaleModal open={finaleOpen} onClose={() => setFinaleOpen(false)} />}</AnimatePresence>
