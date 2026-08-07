@@ -2,6 +2,8 @@
 
 A mobile-first, single-page birthday experience built with React, Vite, Tailwind CSS, and Framer Motion. It combines a scrapbook-style memory map, a relationship quiz, a birthday message, instrumental music, and a timed five-surprise finale.
 
+The site also includes optimized photography, a custom favicon, and a 1200×630 social-sharing preview image.
+
 ## Experience
 
 1. Personalized Happy Birthday welcome screen with optional music
@@ -16,6 +18,8 @@ A mobile-first, single-page birthday experience built with React, Vite, Tailwind
    - Warner Bros. Harry Potter Studio Tour
 
 The first surprise is available immediately. Revealing each ticket starts a one-hour wait before the next one can be opened. Progress and unlock times are stored in the visitor's browser using `localStorage` and survive page refreshes.
+
+The flexible ticket labels `DATE TO BE REVEALED` and `SAILING SOON` are intentional final copy for now: they preserve the surprise until the bookings are ready. Replace them in `src/memoryData.js` when the real dates should be shown.
 
 ## Project structure
 
@@ -35,6 +39,8 @@ Requires a current Node.js LTS release.
 npm install
 npm run dev
 ```
+
+All direct dependencies are pinned to exact versions in `package.json`, and `package-lock.json` is committed for reproducible installs. Prefer `npm ci` in deployment and CI environments.
 
 Open the local address printed by Vite, normally `http://localhost:5173`.
 
