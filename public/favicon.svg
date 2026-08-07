@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Ritika's Memory Arcade</title>
+  <rect width="64" height="64" rx="16" fill="#fffaf0"/>
+  <path d="M32 53S10 40 10 23c0-8 5-13 12-13 5 0 8 3 10 7 2-4 5-7 10-7 7 0 12 5 12 13 0 17-22 30-22 30Z" fill="#d97986"/>
+  <path d="M23 21h11c7 0 11 4 11 10 0 4-2 7-6 9l7 9h-9l-6-8v8h-8V21Zm8 7v7h3c2 0 4-1 4-4s-2-3-4-3h-3Z" fill="#fffaf0"/>
+  <path d="M17 12l2 4 4 2-4 2-2 4-2-4-4-2 4-2 2-4Z" fill="#efb66f"/>
+</svg>
