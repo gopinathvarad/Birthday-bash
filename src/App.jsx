@@ -231,6 +231,7 @@ function StoryPhoto({ milestone }) {
           alt={`Add a favourite photo for ${milestone.title}`}
           className={milestone.photoPortrait ? "portrait-memory-photo" : ""}
           loading="lazy"
+          decoding="async"
           onError={() => setFailed(true)}
         />
       ) : (
@@ -484,7 +485,15 @@ function SurpriseImage({ ticket }) {
   return (
     <div className="surprise-image">
       {!failed ? (
-        <img src={ticket.image} alt={ticket.imageAlt} onError={() => setFailed(true)} />
+        <img
+          src={ticket.image}
+          alt={ticket.imageAlt}
+          loading="lazy"
+          decoding="async"
+          width="1200"
+          height="525"
+          onError={() => setFailed(true)}
+        />
       ) : (
         <div className={`surprise-placeholder surprise-${ticket.id}`} role="img" aria-label={ticket.imageAlt}>
           <span aria-hidden="true">{ticket.icon}</span>
@@ -715,15 +724,23 @@ function App() {
             <div className="hero-polaroids">
               <figure className="mini-polaroid back hero-photo hero-photo-secondary">
                 <img
-                  src={publicAsset("/photos/ritika-title-harry-potter.jpeg?v=1")}
+                  src={publicAsset("/photos/ritika-title-harry-potter.webp?v=1")}
                   alt="Ritika smiling at Platform Nine and Three-Quarters"
+                  decoding="async"
+                  fetchPriority="high"
+                  width="675"
+                  height="900"
                 />
                 <figcaption>off to Hogwarts ⚡</figcaption>
               </figure>
               <figure className="mini-polaroid front hero-photo">
                 <img
-                  src={publicAsset("/photos/ritika-title.jpeg")}
+                  src={publicAsset("/photos/ritika-title.webp?v=1")}
                   alt="Ritika smiling beneath glowing lights and trees"
+                  decoding="async"
+                  fetchPriority="high"
+                  width="506"
+                  height="900"
                 />
                 <figcaption>the birthday star ✦</figcaption>
               </figure>
