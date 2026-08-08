@@ -14,9 +14,9 @@ export const memoryData = {
       "Seven memories, five questions, and a little birthday magic are waiting inside. Ready to revisit some of our best adventures?",
     enterLabel: "Start your birthday adventure ✦",
     music: {
-      title: "Moonlit Birthday Waltz",
-      credit: "Original instrumental · ad-free",
-      src: "/audio/moonlit-birthday-waltz.mp3?v=1",
+      title: "Happy Birthday Waltz for Ritika",
+      credit: "Elegant instrumental · ad-free",
+      src: "/audio/happy-birthday-instrumental.mp3?v=2",
     },
     theme: {
       paper: "#fffaf0",
