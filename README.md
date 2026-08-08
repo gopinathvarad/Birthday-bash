@@ -1,6 +1,6 @@
 # Ritika's Memory Arcade
 
-A mobile-first, single-page birthday experience built with React, Vite, Tailwind CSS, and Framer Motion. It combines a wizarding-school-meets-scrapbook memory map, a relationship quiz, a birthday message, an embedded official soundtrack player, and a timed five-surprise finale.
+A mobile-first, single-page birthday experience built with React, Vite, Tailwind CSS, and Framer Motion. It combines a wizarding-school-meets-scrapbook memory map, a relationship quiz, a birthday message, an original ad-free soundtrack, and a timed five-surprise finale.
 
 The site also includes mobile-sized, metadata-stripped WebP photography, a custom favicon, and a 1200×630 social-sharing preview image. Original JPEG photographs are kept in a private backup outside the deployed project so the public site exposes only the optimized copies.
 
@@ -28,7 +28,8 @@ The flexible ticket labels `DATE TO BE REVEALED` and `SAILING SOON` are intentio
 - `src/index.css` — scrapbook layout, responsive styling, animation, and print styles
 - `public/photos/` — optimized welcome and relationship photographs
 - `public/surprises/` — optimized finale ticket images
-- The music control opens the official YouTube-provided recording of “Hedwig's Theme” inside the page. The website does not copy or redistribute the audio file.
+- The music control plays `public/audio/moonlit-birthday-waltz.mp3`, an original wizarding-style instrumental generated specifically for this site. It is ad-free, loops gently, loads only after a visitor taps Play, and does not open an external player.
+- Regenerate the soundtrack with `python3 scripts/generate_wizarding_waltz.py public/audio/moonlit-birthday-waltz.mp3` (requires `ffmpeg`).
 
 ## Run locally
 
