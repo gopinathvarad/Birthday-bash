@@ -4,7 +4,7 @@ import { memoryData, publicAsset } from "./memoryData";
 
 const STORAGE_KEY = "memory-arcade-unlocked";
 const SURPRISE_PROGRESS_KEY = "memory-arcade-surprise-progress-v1";
-const FIRST_SURPRISE_WAIT_MS = 8.5 * 60 * 60 * 1000;
+const FIRST_SURPRISE_WAIT_MS = 9 * 60 * 60 * 1000;
 const FOLLOWUP_SURPRISE_WAIT_MS = 60 * 60 * 1000;
 
 function readSurpriseProgress() {
@@ -776,7 +776,7 @@ function FinaleModal({ open, onClose }) {
                   <p>{nextNumber === 1
                     ? "The first ticket is yours immediately."
                     : nextNumber === 2
-                      ? "The eight-hour thirty-minute spell has lifted. Tap when you are ready."
+                      ? "The nine-hour spell has lifted. Tap when you are ready."
                       : "The one-hour spell has lifted. Tap when you are ready."}</p>
                   <button type="button" className="primary-button" onClick={revealNext}>
                     Reveal surprise {nextNumber} of {totalSurprises} ✦
@@ -785,7 +785,7 @@ function FinaleModal({ open, onClose }) {
               ) : (
                 <>
                   <span className="unlock-icon" aria-hidden="true">⌛</span>
-                  <p className="eyebrow">{isWandToSecondWait ? "Eight-hour thirty-minute mystery lock" : "One-hour mystery lock"}</p>
+                  <p className="eyebrow">{isWandToSecondWait ? "Nine-hour mystery lock" : "One-hour mystery lock"}</p>
                   <h3>Next surprise unlocks in</h3>
                   <time className="surprise-countdown" dateTime={`PT${Math.ceil(waitRemaining / 1000)}S`}>
                     {formatCountdown(waitRemaining)}

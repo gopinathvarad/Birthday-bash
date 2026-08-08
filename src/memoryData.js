@@ -182,7 +182,7 @@ export const memoryData = {
   finale: {
     eyebrow: "Final level · timed birthday itinerary",
     heading: "Five surprises for Ritika",
-    intro: "Reveal the wand now. Its magic seals the next ticket for eight hours and thirty minutes; after that, each new surprise unlocks one hour after the last.",
+    intro: "Reveal the wand now. Its magic seals the next ticket for nine hours; after that, each new surprise unlocks one hour after the last.",
   },
 
   finaleTickets: [
