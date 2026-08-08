@@ -15,7 +15,7 @@ export const memoryData = {
     enterLabel: "Start your birthday adventure ✦",
     music: {
       title: "An original magical birthday overture",
-      src: publicAsset("/audio/magical-birthday-overture.mp3?v=1"),
+      src: publicAsset("/audio/magical-birthday-overture.mp3?v=2"),
     },
     theme: {
       paper: "#fffaf0",
