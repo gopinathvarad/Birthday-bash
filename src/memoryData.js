@@ -16,7 +16,7 @@ export const memoryData = {
     music: {
       title: "Happy Birthday Waltz for Ritika",
       credit: "Elegant instrumental · ad-free",
-      src: "/audio/happy-birthday-instrumental.mp3?v=2",
+      src: "/audio/happy-birthday-instrumental.mp3?v=3",
     },
     theme: {
       paper: "#fffaf0",
