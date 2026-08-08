@@ -14,8 +14,10 @@ export const memoryData = {
       "Seven memories, five questions, and a little birthday magic are waiting inside. Ready to revisit some of our best adventures?",
     enterLabel: "Start your birthday adventure ✦",
     music: {
-      title: "An original magical birthday overture",
-      src: publicAsset("/audio/magical-birthday-overture.mp3?v=2"),
+      title: "Hedwig's Theme",
+      credit: "John Williams · official YouTube audio",
+      youtubeId: "wtHra9tFISY",
+      sourceUrl: "https://www.youtube.com/watch?v=wtHra9tFISY",
     },
     theme: {
       paper: "#fffaf0",

@@ -33,47 +33,15 @@ function formatCountdown(milliseconds) {
 }
 
 function useBirthdayMusic() {
-  const audioRef = useRef(null);
   const [playing, setPlaying] = useState(false);
-  const [error, setError] = useState("");
 
   const stop = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
     setPlaying(false);
   };
 
-  const toggle = async () => {
-    setError("");
-    if (playing) {
-      stop();
-      return;
-    }
-    try {
-      if (!audioRef.current) {
-        const audio = new Audio(memoryData.site.music.src);
-        audio.loop = true;
-        audio.preload = "auto";
-        audio.volume = 0.68;
-        audioRef.current = audio;
-      }
-      audioRef.current.currentTime = 0;
-      await audioRef.current.play();
-      setPlaying(true);
-    } catch {
-      setError("The birthday song could not play. Try pressing the music button again.");
-      setPlaying(false);
-    }
-  };
+  const toggle = () => setPlaying((current) => !current);
 
-  useEffect(() => () => {
-    audioRef.current?.pause();
-    audioRef.current = null;
-  }, []);
-
-  return { playing, error, onToggle: toggle, stop };
+  return { playing, error: "", onToggle: toggle, stop };
 }
 
 function useDialog(open, onClose) {
@@ -133,16 +101,54 @@ function MusicToggle({ playing, error, onToggle }) {
         className="music-toggle"
         onClick={onToggle}
         aria-pressed={playing}
-        aria-label={playing ? "Pause background music" : "Play background music"}
+        aria-label={playing ? "Close official Harry Potter theme player" : "Play official Harry Potter theme"}
       >
-        <span aria-hidden="true">{playing ? "♫" : "♪"}</span>
-        {playing ? "Music on" : "Music off"}
+        <span aria-hidden="true">{playing ? "⚡" : "♪"}</span>
+        {playing ? "Theme open" : "Official theme"}
       </button>
       <p className="sr-only" aria-live="polite">
         {error}
       </p>
       {error && <span className="music-hint">Music unavailable</span>}
     </div>
+  );
+}
+
+function OfficialMusicPlayer({ open, onClose }) {
+  const reduceMotion = useReducedMotion();
+  if (!open) return null;
+
+  const { youtubeId, sourceUrl, title, credit } = memoryData.site.music;
+  const embedUrl = `https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&loop=1&playlist=${youtubeId}&controls=1&rel=0`;
+
+  return (
+    <motion.aside
+      className="official-music-player"
+      aria-label="Official Harry Potter soundtrack player"
+      initial={reduceMotion ? false : { opacity: 0, y: 22, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 16, scale: 0.98 }}
+    >
+      <div className="official-music-heading">
+        <div>
+          <span aria-hidden="true">⚡</span>
+          <strong>{title}</strong>
+          <small>{credit}</small>
+        </div>
+        <button type="button" onClick={onClose} aria-label="Close official soundtrack player">×</button>
+      </div>
+      <iframe
+        src={embedUrl}
+        title={`${title} — official YouTube audio`}
+        allow="autoplay; encrypted-media; picture-in-picture"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allowFullScreen
+      />
+      <p>
+        Official audio streamed by YouTube. If sound does not begin automatically, press play above.
+        {" "}<a href={sourceUrl} target="_blank" rel="noreferrer">View the official source</a>
+      </p>
+    </motion.aside>
   );
 }
 
@@ -850,6 +856,7 @@ function App() {
         </footer>
       </div>
       <AnimatePresence>{finaleOpen && <FinaleModal open={finaleOpen} onClose={() => setFinaleOpen(false)} />}</AnimatePresence>
+      <AnimatePresence>{music.playing && <OfficialMusicPlayer open={music.playing} onClose={music.stop} />}</AnimatePresence>
       <AnimatePresence>
         {resetOpen && <ResetConfirmation open={resetOpen} onCancel={() => setResetOpen(false)} onConfirm={thanosReset} />}
       </AnimatePresence>
