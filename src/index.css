@@ -164,9 +164,15 @@ h1, h2, h3 { font-family: "Fraunces", Georgia, serif; margin: 0; line-height: 1.
 .wand-flight i::after { content: ""; position: absolute; left: -8px; top: 50%; width: 15px; height: 15px; border-radius: 50%; background: #2b1b12; transform: translateY(-50%); }
 .spell-sparks { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 .spell-sparks i { position: absolute; width: 5px; height: 5px; border-radius: 50%; opacity: 0; background: #fff6bf; box-shadow: 0 0 8px #fff, 0 0 18px #e3b952; animation: spark-burst 1.15s ease-out forwards; }
-.skip-signature { position: absolute; z-index: 8; right: 1rem; bottom: 1rem; padding: .55rem .75rem; border: 1px solid rgba(245,223,145,.28); border-radius: 999px; color: rgba(255,247,217,.65); background: rgba(5,7,13,.4); font-size: .68rem; cursor: pointer; backdrop-filter: blur(8px); }
-.skip-signature:hover, .skip-signature:focus-visible { color: #fff7d9; border-color: #d7b35e; }
-.signature-sequence-timer { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; animation: signature-sequence-clock 4.35s linear forwards; }
+.continue-signature {
+  position: absolute; z-index: 8; left: 50%; bottom: clamp(1.5rem, 7vh, 4.5rem); display: inline-flex; align-items: center; justify-content: center; gap: .55rem;
+  min-height: 52px; padding: .9rem 1.4rem; border: 1px solid #ead18c; border-radius: 999px; color: #21192a;
+  background: linear-gradient(135deg, #fff1bd, #d5ad52); box-shadow: 0 0 0 4px rgba(245,223,145,.12), 0 0 28px rgba(224,184,89,.34), 0 12px 30px rgba(0,0,0,.38);
+  visibility: hidden; opacity: 0; pointer-events: none; transform: translateX(-50%); font-weight: 800; white-space: nowrap; cursor: pointer;
+  animation: reveal-continue-button .5s 3.85s ease-out forwards;
+}
+.continue-signature:hover { box-shadow: 0 0 0 4px rgba(245,223,145,.2), 0 0 42px rgba(245,223,145,.55), 0 15px 34px rgba(0,0,0,.42); filter: brightness(1.06); }
+.continue-signature span { color: #6c4e18; }
 
 @keyframes spell-breathe { 50% { filter: brightness(1.22); transform: scale(1.03); } }
 @keyframes magical-flash { 0%, 55% { opacity: 0; transform: scale(.25); } 66% { opacity: .7; transform: scale(.75); } 78% { opacity: .05; transform: scale(1.2); } 88% { opacity: .9; transform: scale(1.6); } 100% { opacity: 0; transform: scale(2); } }
@@ -179,7 +185,7 @@ h1, h2, h3 { font-family: "Fraunces", Georgia, serif; margin: 0; line-height: 1.
 @keyframes spark-burst { 0% { opacity: 0; transform: scale(.1) translate(0,0); } 38% { opacity: 1; transform: scale(1.4) translate(7px,-10px); } 100% { opacity: 0; transform: scale(.2) translate(18px,-35px); } }
 @keyframes curtain-left-open { to { transform: translateX(-104%) rotateY(18deg); opacity: .1; } }
 @keyframes curtain-right-open { to { transform: translateX(104%) rotateY(-18deg); opacity: .1; } }
-@keyframes signature-sequence-clock { from { transform: scale(1); } to { transform: scale(1.001); } }
+@keyframes reveal-continue-button { 0% { visibility: visible; opacity: 0; pointer-events: none; } 100% { visibility: visible; opacity: 1; pointer-events: auto; } }
 
 /* Welcome */
 .welcome-screen {
@@ -439,7 +445,7 @@ footer p { margin: 0; font-family: "Caveat", cursive; font-size: 1.3rem; }
   .spell-awakens { letter-spacing: .2em; }
   .wand-flight { width: 130px; }
   .signature-name { min-width: 92vw; }
-  .skip-signature { right: 50%; transform: translateX(50%); }
+  .continue-signature { width: min(88vw, 360px); bottom: 1.35rem; white-space: normal; }
   .welcome-card { padding-top: 3.2rem; }
   .welcome-card .primary-button { width: 100%; font-size: .83rem; }
   .site-header { padding-block: .65rem; }
@@ -469,6 +475,7 @@ footer p { margin: 0; font-family: "Caveat", cursive; font-size: 1.3rem; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .continue-signature { animation-delay: .05s !important; }
 }
 
 @media print {

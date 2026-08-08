@@ -6,8 +6,8 @@ const revealInvitation = () => {
   const revealButtons = screen.getAllByRole("button", { name: /break the seal to reveal it/i });
   fireEvent.click(revealButtons[revealButtons.length - 1]);
   expect(screen.getByRole("status", { name: /birthday magic is signing ritika's invitation/i })).toBeInTheDocument();
-  const skipButtons = screen.getAllByRole("button", { name: /skip reveal/i });
-  fireEvent.click(skipButtons[skipButtons.length - 1]);
+  const continueButtons = screen.getAllByTestId("continue-signature");
+  fireEvent.click(continueButtons[continueButtons.length - 1]);
 };
 
 const enterArcade = () => {
@@ -29,7 +29,7 @@ describe("Memory Arcade", () => {
     expect(screen.getByRole("status", { name: /birthday magic is signing ritika's invitation/i })).toBeInTheDocument();
     expect(screen.getByLabelText("Ritika")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /happy birthday, ritika/i })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /skip reveal/i }));
+    fireEvent.click(screen.getByTestId("continue-signature"));
     expect(screen.getByRole("heading", { name: /happy birthday, ritika/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
     expect(screen.getByRole("heading", { name: "Ritika's Memory Arcade" })).toBeInTheDocument();

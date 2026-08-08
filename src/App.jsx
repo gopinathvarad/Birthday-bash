@@ -232,11 +232,6 @@ function SignatureReveal({ onComplete }) {
     completeRef.current();
   };
 
-  useEffect(() => {
-    const fallback = window.setTimeout(finishReveal, reduceMotion ? 120 : 4800);
-    return () => window.clearTimeout(fallback);
-  }, [reduceMotion]);
-
   return (
     <motion.div
       className="signature-reveal-screen"
@@ -270,13 +265,14 @@ function SignatureReveal({ onComplete }) {
         <p className="spell-promise">Your magical adventure is about to begin…</p>
       </div>
 
-      <button type="button" className="skip-signature" onClick={finishReveal}>Skip reveal</button>
-      <span
-        className="signature-sequence-timer"
-        data-testid="signature-sequence"
-        aria-hidden="true"
-        onAnimationEnd={finishReveal}
-      />
+      <button
+        type="button"
+        className="continue-signature"
+        data-testid="continue-signature"
+        onClick={finishReveal}
+      >
+        Continue to the Memory Arcade <span aria-hidden="true">✦</span>
+      </button>
     </motion.div>
   );
 }
