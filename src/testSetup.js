@@ -20,6 +20,8 @@ Object.defineProperty(window, "matchMedia", {
 
 window.scrollTo = () => {};
 window.print = () => {};
+HTMLMediaElement.prototype.play = () => Promise.resolve();
+HTMLMediaElement.prototype.pause = () => {};
 
 class IntersectionObserverMock {
   observe() {}

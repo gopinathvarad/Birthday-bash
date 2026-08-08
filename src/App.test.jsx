@@ -35,18 +35,16 @@ describe("Memory Arcade", () => {
     expect(screen.getByText(/suspects selective memory/i)).toBeInTheDocument();
   });
 
-  it("opens the official soundtrack inside the website", async () => {
+  it("plays the ad-free soundtrack without opening an external player", async () => {
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /play official harry potter theme/i }));
-
-    const player = screen.getByTitle(/hedwig's theme — official youtube audio/i);
-    expect(player).toHaveAttribute("src", expect.stringContaining("youtube-nocookie.com/embed/wtHra9tFISY"));
-    expect(screen.getByText(/official audio streamed by youtube/i)).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /close official soundtrack player/i }));
+    fireEvent.click(screen.getByRole("button", { name: /play magical birthday music/i }));
     await waitFor(() => {
-      expect(screen.queryByTitle(/hedwig's theme — official youtube audio/i)).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /pause magical birthday music/i })).toBeInTheDocument();
     });
+    expect(document.querySelector("iframe")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /pause magical birthday music/i }));
+    expect(screen.getByRole("button", { name: /play magical birthday music/i })).toBeInTheDocument();
   });
 
   it("reveals the wand first and starts the eight-hour thirty-minute lock", () => {
