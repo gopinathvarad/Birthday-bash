@@ -1,12 +1,12 @@
 # Ritika's Memory Arcade
 
-A mobile-first, single-page birthday experience built with React, Vite, Tailwind CSS, and Framer Motion. It combines a scrapbook-style memory map, a relationship quiz, a birthday message, instrumental music, and a timed five-surprise finale.
+A mobile-first, single-page birthday experience built with React, Vite, Tailwind CSS, and Framer Motion. It combines a wizarding-school-meets-scrapbook memory map, a relationship quiz, a birthday message, original magical instrumental music, and a timed five-surprise finale.
 
 The site also includes mobile-sized, metadata-stripped WebP photography, a custom favicon, and a 1200×630 social-sharing preview image. Original JPEG photographs are kept in a private backup outside the deployed project so the public site exposes only the optimized copies.
 
 ## Experience
 
-1. Personalized Happy Birthday welcome screen with optional music
+1. Personalized magical Happy Birthday welcome screen with optional music
 2. Seven-location relationship memory map with photographs and stories
 3. Five-question multiple-choice quiz with affectionate hints
 4. Birthday message unlocked after a perfect score
@@ -17,7 +17,7 @@ The site also includes mobile-sized, metadata-stripped WebP photography, a custo
    - Thames cruise
    - Warner Bros. Harry Potter Studio Tour
 
-The first surprise is available immediately. Revealing each ticket starts a one-hour wait before the next one can be opened. Progress and unlock times are stored in the visitor's browser using `localStorage` and survive page refreshes.
+The wand is available immediately. Revealing it starts an eight-hour thirty-minute wait before The Shard can be opened. Every later reveal starts a one-hour wait before the following ticket. Progress and unlock times are stored in the visitor's browser using `localStorage` and survive page refreshes.
 
 The flexible ticket labels `DATE TO BE REVEALED` and `SAILING SOON` are intentional final copy for now: they preserve the surprise until the bookings are ready. Replace them in `src/memoryData.js` when the real dates should be shown.
 
@@ -28,8 +28,8 @@ The flexible ticket labels `DATE TO BE REVEALED` and `SAILING SOON` are intentio
 - `src/index.css` — scrapbook layout, responsive styling, animation, and print styles
 - `public/photos/` — optimized welcome and relationship photographs
 - `public/surprises/` — optimized finale ticket images
-- `public/audio/` — local instrumental Happy Birthday track
-- `scripts/generate_birthday_song.py` — reproducible backing-track generator
+- `public/audio/` — local original magical overture
+- `scripts/generate_magical_overture.py` — reproducible backing-track generator
 
 ## Run locally
 
@@ -65,7 +65,9 @@ The finale timer uses these browser storage keys:
 
 Clearing browser site data resets the experience. Because the website is entirely static, the timer is a playful client-side lock rather than a tamper-proof security control.
 
-Before presenting the site, use the footer's **Thanos reset** button and confirm the warning. It clears quiz completion, visited memories, revealed surprise tickets, the one-hour countdown, music playback, modal state, and the URL hash, then returns to the welcome screen and question one. Cancelling the warning preserves all progress.
+Before presenting the site, use the footer's **Thanos reset** button, enter the case-sensitive reset password `GV`, and confirm the warning. It clears quiz completion, visited memories, revealed surprise tickets, active countdowns, music playback, modal state, and the URL hash, then returns to the welcome screen and question one. Cancelling the warning or entering the wrong password preserves all progress.
+
+The `GV` check is intentionally a client-side accident guard, not secure authentication. Because this is a static website, a determined visitor can inspect its bundled JavaScript or clear browser site data themselves.
 
 ## Deployment
 
