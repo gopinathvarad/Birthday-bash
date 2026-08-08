@@ -1,12 +1,12 @@
-# Birthday music
+# Magical birthday music
 
-`happy-birthday-instrumental.mp3` is the local instrumental Happy Birthday arrangement used by the music toggle. It contains no spoken or synthesized voice. Playback begins only after the visitor presses the button, in line with browser autoplay restrictions.
+`magical-birthday-overture.mp3` is the original celesta, harp, and strings arrangement used by the music toggle. It creates a gentle wizarding atmosphere without copying the copyrighted Harry Potter film theme. It contains no voice, and playback begins only after the visitor presses the button in line with browser autoplay restrictions.
 
-Regenerate and encode the backing track with:
+Regenerate and encode the track with:
 
 ```bash
-python3 scripts/generate_birthday_song.py
-ffmpeg -i public/audio/happy-birthday-instrumental.wav -c:a libmp3lame -b:a 192k public/audio/happy-birthday-instrumental.mp3
+python3 scripts/generate_magical_overture.py
+ffmpeg -i public/audio/magical-birthday-overture.wav -c:a libmp3lame -b:a 160k public/audio/magical-birthday-overture.mp3
 ```
 
-You can still replace it with a recorded track later, provided you have permission to publish that recording.
+You can replace it with another recording later, provided you have permission to publish that recording.
