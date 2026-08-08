@@ -1,6 +1,6 @@
 # Magical birthday music
 
-`magical-birthday-overture.mp3` is the original celesta, harp, and strings arrangement used by the music toggle. It creates a gentle wizarding atmosphere without copying the copyrighted Harry Potter film theme. It contains no voice, and playback begins only after the visitor presses the button in line with browser autoplay restrictions.
+`magical-birthday-overture.mp3` is the original cinematic arrangement used by the music toggle. Celesta, bells, harp, pizzicato bass, woodwind, and strings create a mysterious wizarding-fantasy atmosphere without copying the copyrighted Harry Potter film theme. It contains no voice, and playback begins only after the visitor presses the button in line with browser autoplay restrictions.
 
 Regenerate and encode the track with:
 
