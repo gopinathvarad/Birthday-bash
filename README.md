@@ -17,7 +17,7 @@ The site also includes mobile-sized, metadata-stripped WebP photography, a custo
    - Thames cruise
    - Warner Bros. Harry Potter Studio Tour
 
-The wand is available immediately. Revealing it starts an eight-hour thirty-minute wait before The Shard can be opened. Every later reveal starts a one-hour wait before the following ticket. Progress and unlock times are stored in the visitor's browser using `localStorage` and survive page refreshes.
+The wand is available immediately. Revealing it starts a nine-hour wait before The Shard can be opened. Every later reveal starts a one-hour wait before the following ticket. Progress and unlock times are stored in the visitor's browser using `localStorage` and survive page refreshes.
 
 The flexible ticket labels `DATE TO BE REVEALED` and `SAILING SOON` are intentional final copy for now: they preserve the surprise until the bookings are ready. Replace them in `src/memoryData.js` when the real dates should be shown.
 
