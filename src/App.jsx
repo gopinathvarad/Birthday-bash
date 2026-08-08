@@ -153,6 +153,67 @@ function MusicToggle({ playing, error, onToggle }) {
   );
 }
 
+function MagicInvitation({ onReveal }) {
+  const reduceMotion = useReducedMotion();
+  const sparks = ["✦", "✧", "★", "☾", "✦", "⚡", "✧"];
+
+  return (
+    <motion.div
+      className="invitation-screen"
+      initial={{ opacity: 1 }}
+      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 1.08 }}
+      transition={{ duration: reduceMotion ? 0 : 0.7 }}
+    >
+      <div className="invitation-sky" aria-hidden="true" />
+      <div className="castle-silhouette" aria-hidden="true">
+        <i /><i /><i /><i /><i />
+      </div>
+      {sparks.map((spark, index) => (
+        <motion.span
+          key={`${spark}-${index}`}
+          className={`invitation-spark invitation-spark-${index + 1}`}
+          aria-hidden="true"
+          animate={reduceMotion ? {} : { opacity: [0.35, 1, 0.35], y: [0, -8, 0] }}
+          transition={{ duration: 2.2 + index * 0.25, repeat: Infinity, ease: "easeInOut" }}
+        >
+          {spark}
+        </motion.span>
+      ))}
+
+      <motion.main
+        className="invitation-wrap"
+        initial={reduceMotion ? false : { opacity: 0, y: 24, rotate: -2 }}
+        animate={{ opacity: 1, y: 0, rotate: 0 }}
+        transition={{ type: "spring", stiffness: 105, damping: 16, delay: 0.15 }}
+      >
+        <p className="invitation-delivery">✦ SPECIAL MAGICAL DELIVERY ✦</p>
+        <div className="enchanted-envelope">
+          <div className="envelope-flap" aria-hidden="true" />
+          <div className="invitation-address">
+            <span>To</span>
+            <strong>Ritika</strong>
+            <small>Wherever the magic finds her</small>
+          </div>
+          <button
+            type="button"
+            className="wax-seal"
+            onClick={onReveal}
+            aria-label="Break the enchanted seal and reveal Ritika's surprise"
+          >
+            <span aria-hidden="true">R</span>
+          </button>
+        </div>
+        <h1>A mysterious invitation has arrived</h1>
+        <p>Somewhere between Platform 9¾ and a little birthday magic, an enchanted surprise is waiting for you.</p>
+        <button type="button" className="invitation-button" onClick={onReveal}>
+          Break the seal to reveal it <span aria-hidden="true">⚡</span>
+        </button>
+        <p className="invitation-whisper">Best opened by the birthday witch herself</p>
+      </motion.main>
+    </motion.div>
+  );
+}
+
 function Welcome({ onEnter, music }) {
   const reduceMotion = useReducedMotion();
   const floaters = ["✦", "☾", "✧", "★", "⚡", "♡", "✦", "☼"];
@@ -754,6 +815,7 @@ function ResetConfirmation({ open, onCancel, onConfirm }) {
 }
 
 function App() {
+  const [invitationOpen, setInvitationOpen] = useState(true);
   const [welcomeOpen, setWelcomeOpen] = useState(true);
   const [unlocked, setUnlocked] = useState(() => {
     try {
@@ -772,6 +834,11 @@ function App() {
     window.setTimeout(() => document.getElementById("top")?.focus(), 150);
   };
 
+  const revealBirthday = () => {
+    setInvitationOpen(false);
+    window.setTimeout(() => document.querySelector(".welcome-card h1")?.focus?.(), 150);
+  };
+
   const thanosReset = () => {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -783,6 +850,7 @@ function App() {
     setResetOpen(false);
     setUnlocked(false);
     setFinaleOpen(false);
+    setInvitationOpen(true);
     setWelcomeOpen(true);
     setRunId((value) => value + 1);
     window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
@@ -796,11 +864,12 @@ function App() {
   return (
     <div className="memory-app-root" style={themeStyle}>
       <a className="skip-link" href="#main-content">Skip to memories</a>
-      <AnimatePresence>{welcomeOpen && <Welcome onEnter={enter} music={music} />}</AnimatePresence>
+      <AnimatePresence>{invitationOpen && <MagicInvitation onReveal={revealBirthday} />}</AnimatePresence>
+      <AnimatePresence>{!invitationOpen && welcomeOpen && <Welcome onEnter={enter} music={music} />}</AnimatePresence>
       <div
-        className={welcomeOpen ? "app-shell app-hidden" : "app-shell"}
-        aria-hidden={welcomeOpen}
-        inert={welcomeOpen}
+        className={invitationOpen || welcomeOpen ? "app-shell app-hidden" : "app-shell"}
+        aria-hidden={invitationOpen || welcomeOpen}
+        inert={invitationOpen || welcomeOpen}
       >
         <Header music={music} />
         <main id="main-content" key={runId}>

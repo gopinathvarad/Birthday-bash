@@ -2,14 +2,27 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import App from "./App";
 
+const revealInvitation = () => {
+  fireEvent.click(screen.getByRole("button", { name: /break the seal to reveal it/i }));
+};
+
+const enterArcade = () => {
+  revealInvitation();
+  fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
+};
+
 describe("Memory Arcade", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it("opens the arcade from the welcome screen", () => {
+  it("reveals the birthday welcome from the enchanted invitation", () => {
     render(<App />);
+    expect(screen.getByRole("heading", { name: /a mysterious invitation has arrived/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /happy birthday, ritika/i })).not.toBeInTheDocument();
     expect(document.querySelector(".app-shell")).toHaveAttribute("inert");
+    revealInvitation();
+    expect(screen.getByRole("heading", { name: /happy birthday, ritika/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
     expect(screen.getByRole("heading", { name: "Ritika's Memory Arcade" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "A map of us" })).toBeInTheDocument();
@@ -18,7 +31,7 @@ describe("Memory Arcade", () => {
 
   it("opens a milestone as an accessible dialog", async () => {
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
+    enterArcade();
     fireEvent.click(screen.getByRole("button", { name: /open memory 01/i }));
     expect(screen.getByRole("dialog", { name: "New Year in Scotland" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /one nervous flight and an unforgettable new year/i })).toBeInTheDocument();
@@ -30,13 +43,14 @@ describe("Memory Arcade", () => {
 
   it("offers a gentle hint after an incorrect quiz answer", () => {
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
+    enterArcade();
     fireEvent.click(screen.getByRole("button", { name: "Snakes" }));
     expect(screen.getByText(/suspects selective memory/i)).toBeInTheDocument();
   });
 
   it("plays the ad-free soundtrack without opening an external player", async () => {
     render(<App />);
+    revealInvitation();
     fireEvent.click(screen.getByRole("button", { name: /play magical birthday music/i }));
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /pause magical birthday music/i })).toBeInTheDocument();
@@ -50,7 +64,7 @@ describe("Memory Arcade", () => {
   it("reveals the wand first and starts the eight-hour thirty-minute lock", () => {
     localStorage.setItem("memory-arcade-unlocked", "true");
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
+    enterArcade();
     expect(screen.getByRole("heading", { name: "Happy 26th Birthday, Ritika!" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /reveal all five surprises/i }));
     expect(screen.getByRole("dialog", { name: "Five surprises for Ritika" })).toBeInTheDocument();
@@ -73,7 +87,7 @@ describe("Memory Arcade", () => {
       nextUnlockAt: Date.now() - 1000,
     }));
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
+    enterArcade();
     fireEvent.click(screen.getByRole("button", { name: /reveal all five surprises/i }));
     fireEvent.click(screen.getByRole("button", { name: /reveal surprise 2 of 5/i }));
     expect(screen.getByRole("heading", { name: "A Date Above London" })).toBeInTheDocument();
@@ -94,7 +108,7 @@ describe("Memory Arcade", () => {
     }));
 
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
+    enterArcade();
     fireEvent.click(screen.getByRole("button", { name: /open memory 01/i }));
     fireEvent.click(screen.getByRole("button", { name: "Close memory" }));
     expect(screen.getByText("♥ 1 / 7 visited")).toBeInTheDocument();
@@ -115,6 +129,8 @@ describe("Memory Arcade", () => {
 
     expect(localStorage.getItem("memory-arcade-unlocked")).toBeNull();
     expect(localStorage.getItem("memory-arcade-surprise-progress-v1")).toBeNull();
+    expect(screen.getByRole("heading", { name: /a mysterious invitation has arrived/i })).toBeInTheDocument();
+    revealInvitation();
     expect(screen.getByRole("button", { name: /start your birthday adventure/i })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
@@ -126,7 +142,7 @@ describe("Memory Arcade", () => {
   it("cancels the Thanos reset without losing progress", async () => {
     localStorage.setItem("memory-arcade-unlocked", "true");
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
+    enterArcade();
     fireEvent.click(screen.getByRole("button", { name: /thanos reset/i }));
     fireEvent.click(screen.getByRole("button", { name: /keep my progress/i }));
 
