@@ -9,9 +9,11 @@ describe("Memory Arcade", () => {
 
   it("opens the arcade from the welcome screen", () => {
     render(<App />);
+    expect(document.querySelector(".app-shell")).toHaveAttribute("inert");
     fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
     expect(screen.getByRole("heading", { name: "Ritika's Memory Arcade" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "A map of us" })).toBeInTheDocument();
+    expect(document.querySelector(".app-shell")).not.toHaveAttribute("inert");
   });
 
   it("opens a milestone as an accessible dialog", async () => {
@@ -19,6 +21,7 @@ describe("Memory Arcade", () => {
     fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
     fireEvent.click(screen.getByRole("button", { name: /open memory 01/i }));
     expect(screen.getByRole("dialog", { name: "New Year in Scotland" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /one nervous flight and an unforgettable new year/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Close memory" }));
     await waitFor(() => {
       expect(screen.queryByRole("dialog", { name: "New Year in Scotland" })).not.toBeInTheDocument();
@@ -77,6 +80,11 @@ describe("Memory Arcade", () => {
     expect(screen.getByText("♥ 1 / 7 visited")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /thanos reset/i }));
 
+    expect(screen.getByRole("alertdialog", { name: /start the entire arcade again/i })).toBeInTheDocument();
+    expect(localStorage.getItem("memory-arcade-unlocked")).toBe("true");
+    expect(localStorage.getItem("memory-arcade-surprise-progress-v1")).not.toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /yes, erase everything/i }));
+
     expect(localStorage.getItem("memory-arcade-unlocked")).toBeNull();
     expect(localStorage.getItem("memory-arcade-surprise-progress-v1")).toBeNull();
     expect(screen.getByRole("button", { name: /start your birthday adventure/i })).toBeInTheDocument();
@@ -85,5 +93,17 @@ describe("Memory Arcade", () => {
     expect(screen.getByRole("heading", { name: "Which animal is Ritika most frightened of?" })).toBeInTheDocument();
     expect(screen.getByLabelText("0 of 5 questions complete")).toBeInTheDocument();
     expect(screen.getByText("♥ 0 / 7 visited")).toBeInTheDocument();
+  });
+
+  it("cancels the Thanos reset without losing progress", async () => {
+    localStorage.setItem("memory-arcade-unlocked", "true");
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
+    fireEvent.click(screen.getByRole("button", { name: /thanos reset/i }));
+    fireEvent.click(screen.getByRole("button", { name: /keep my progress/i }));
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
+    expect(localStorage.getItem("memory-arcade-unlocked")).toBe("true");
+    expect(screen.getByRole("heading", { name: "Happy 26th Birthday, Ritika!" })).toBeInTheDocument();
   });
 });

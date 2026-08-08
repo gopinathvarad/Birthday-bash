@@ -83,15 +83,16 @@ function useDialog(open, onClose) {
     if (!open) return undefined;
     returnFocusRef.current = document.activeElement;
     const dialog = dialogRef.current;
-    const focusables = dialog?.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    const getFocusables = () => dialog?.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
     );
-    focusables?.[0]?.focus();
+    getFocusables()?.[0]?.focus();
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") onClose();
+      const focusables = getFocusables();
       if (event.key !== "Tab" || !focusables?.length) return;
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
@@ -228,14 +229,14 @@ function StoryPhoto({ milestone }) {
       {!failed ? (
         <img
           src={milestone.photo}
-          alt={`Add a favourite photo for ${milestone.title}`}
+          alt={milestone.caption}
           className={milestone.photoPortrait ? "portrait-memory-photo" : ""}
           loading="lazy"
           decoding="async"
           onError={() => setFailed(true)}
         />
       ) : (
-        <div className="photo-placeholder" role="img" aria-label="Photo placeholder">
+        <div className="photo-placeholder" role="img" aria-label={`Photo unavailable for ${milestone.title}`}>
           <span aria-hidden="true">{milestone.icon}</span>
           <strong>YOUR PHOTO HERE</strong>
           <small>{milestone.photo}</small>
@@ -669,6 +670,45 @@ function FinaleModal({ open, onClose }) {
   );
 }
 
+function ResetConfirmation({ open, onCancel, onConfirm }) {
+  const dialogRef = useDialog(open, onCancel);
+  const reduceMotion = useReducedMotion();
+
+  if (!open) return null;
+
+  return (
+    <motion.div
+      className="modal-backdrop reset-backdrop"
+      role="presentation"
+      onMouseDown={(event) => event.target === event.currentTarget && onCancel()}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        ref={dialogRef}
+        className="reset-dialog"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="reset-title"
+        aria-describedby="reset-description"
+        initial={reduceMotion ? false : { opacity: 0, y: 20, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 12, scale: 0.98 }}
+      >
+        <span className="reset-icon" aria-hidden="true">🫰</span>
+        <p className="eyebrow">Thanos reset</p>
+        <h2 id="reset-title">Start the entire arcade again?</h2>
+        <p id="reset-description">Are you sure? This will erase every visited memory, quiz answer, revealed surprise and active timer on this browser.</p>
+        <div className="reset-actions">
+          <button type="button" className="secondary-button" onClick={onCancel}>Keep my progress</button>
+          <button type="button" className="primary-button reset-confirm-button" onClick={onConfirm}>Yes, erase everything</button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function App() {
   const [welcomeOpen, setWelcomeOpen] = useState(true);
   const [unlocked, setUnlocked] = useState(() => {
@@ -679,6 +719,7 @@ function App() {
     }
   });
   const [finaleOpen, setFinaleOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const [runId, setRunId] = useState(0);
   const music = useBirthdayMusic();
 
@@ -695,6 +736,7 @@ function App() {
       // The in-memory reset still works when browser storage is unavailable.
     }
     music.stop();
+    setResetOpen(false);
     setUnlocked(false);
     setFinaleOpen(false);
     setWelcomeOpen(true);
@@ -711,7 +753,11 @@ function App() {
     <div className="memory-app-root" style={themeStyle}>
       <a className="skip-link" href="#main-content">Skip to memories</a>
       <AnimatePresence>{welcomeOpen && <Welcome onEnter={enter} music={music} />}</AnimatePresence>
-      <div className={welcomeOpen ? "app-shell app-hidden" : "app-shell"} aria-hidden={welcomeOpen}>
+      <div
+        className={welcomeOpen ? "app-shell app-hidden" : "app-shell"}
+        aria-hidden={welcomeOpen}
+        inert={welcomeOpen}
+      >
         <Header music={music} />
         <main id="main-content" key={runId}>
           <section id="top" className="hero-section" tabIndex="-1">
@@ -757,7 +803,7 @@ function App() {
           <button
             type="button"
             className="thanos-reset"
-            onClick={thanosReset}
+            onClick={() => setResetOpen(true)}
             aria-label="Thanos reset: erase all Memory Arcade progress and return to the welcome screen"
           >
             <span aria-hidden="true">🫰</span>
@@ -767,6 +813,9 @@ function App() {
         </footer>
       </div>
       <AnimatePresence>{finaleOpen && <FinaleModal open={finaleOpen} onClose={() => setFinaleOpen(false)} />}</AnimatePresence>
+      <AnimatePresence>
+        {resetOpen && <ResetConfirmation open={resetOpen} onCancel={() => setResetOpen(false)} onConfirm={thanosReset} />}
+      </AnimatePresence>
     </div>
   );
 }

@@ -253,6 +253,23 @@ h1, h2, h3 { font-family: "Fraunces", Georgia, serif; margin: 0; line-height: 1.
 .ticket-actions { color: white; text-align: center; }.ticket-actions p { font-family: "Caveat", cursive; font-size: 1.3rem; }.ticket-actions .primary-button { background: #fff8eb; color: var(--cocoa); }
 .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }.confetti i { position: absolute; top: -20px; width: 9px; height: 16px; animation: confetti-fall 3.2s linear infinite; }
 
+.reset-backdrop { background: rgba(49,32,43,.72); }
+.reset-dialog {
+  position: relative; width: min(100%, 520px); padding: clamp(2rem, 7vw, 3.5rem); border: 1px solid rgba(77,54,54,.16);
+  border-radius: 18px; background: #fffdf6; color: var(--cocoa); text-align: center; box-shadow: 0 30px 90px rgba(30,20,25,.35);
+}
+.reset-dialog h2 { font-size: clamp(2rem, 7vw, 3.5rem); }
+.reset-dialog > p:not(.eyebrow) { margin: 1.1rem auto 1.8rem; max-width: 420px; color: #6a5050; line-height: 1.65; }
+.reset-icon { display: block; margin-bottom: .8rem; font-size: 2.5rem; }
+.reset-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .8rem; }
+.secondary-button {
+  display: inline-flex; align-items: center; justify-content: center; padding: .9rem 1.3rem; border: 2px solid var(--cocoa);
+  border-radius: 999px; background: transparent; color: var(--cocoa); font-weight: 700; cursor: pointer;
+}
+.secondary-button:hover { background: #f7e7df; }
+.secondary-button:focus-visible { outline: 3px solid #6f4f82; outline-offset: 4px; }
+.reset-confirm-button { background: #68434d; box-shadow: 4px 5px 0 var(--blush); }
+
 footer { display: flex; flex-direction: column; align-items: center; gap: .8rem; padding: 3rem 1.5rem; background: var(--cocoa); color: #fffaf0; text-align: center; }
 footer p { margin: 0; font-family: "Caveat", cursive; font-size: 1.3rem; }
 .thanos-reset { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0 .65rem; min-width: min(100%, 290px); padding: .8rem 1rem; border: 1px solid rgba(245,198,206,.52); border-radius: 12px; background: rgba(255,255,255,.07); color: #fffaf0; text-align: left; cursor: pointer; transition: transform .15s ease, border-color .15s ease, background .15s ease; }
@@ -304,6 +321,7 @@ footer p { margin: 0; font-family: "Caveat", cursive; font-size: 1.3rem; }
   .surprise-progress li { scroll-snap-align: start; }
   .ticket-grid { grid-template-columns: 1fr; }.ticket-grid .wide { grid-column: auto; }
   .ticket-close { right: 1.2rem; top: 1.2rem; }
+  .reset-actions > button { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
