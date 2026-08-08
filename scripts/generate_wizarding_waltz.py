@@ -22,7 +22,7 @@ SAMPLE_RATE = 44_100
 TEMPO = 82
 EIGHTH = 60 / TEMPO / 2
 BAR = EIGHTH * 6
-BAR_COUNT = 24
+BAR_COUNT = 27
 DURATION = BAR * BAR_COUNT + 4.5
 
 
@@ -75,6 +75,12 @@ def main() -> None:
                     + 0.34 * math.sin(2.01 * phase)
                     + 0.13 * math.sin(3.98 * phase)
                 )
+            elif voice == "lead":
+                attack = min(1.0, t / 0.008)
+                release = min(1.0, (duration - t) / 0.16)
+                envelope = attack * release * (0.98 - 0.24 * progress)
+                phase = 2 * math.pi * frequency * t
+                value = math.sin(phase) + 0.26 * math.sin(2 * phase) + 0.09 * math.sin(3 * phase)
             elif voice == "harp":
                 envelope = min(1.0, t / 0.008) * math.exp(-5.2 * progress)
                 phase = 2 * math.pi * frequency * t
@@ -100,10 +106,11 @@ def main() -> None:
             left[index] += sample * gain_l
             right[index] += sample * gain_r
 
-    # Eight supportive 6/8 bars, repeated three times with a gentle lift.
+    # A one-bar introduction plus eight familiar birthday bars, repeated three times.
     birthday_progression = [
+        (48, (55, 60, 64, 67)),  # C introduction and pickup
         (48, (55, 60, 64, 67)),  # C
-        (40, (52, 55, 60, 64)),  # C/E
+        (43, (55, 59, 62, 65)),  # G7
         (43, (55, 59, 62, 65)),  # G7
         (48, (55, 60, 64, 67)),  # C
         (48, (55, 60, 64, 67)),  # C
@@ -116,56 +123,54 @@ def main() -> None:
     arpeggio_order = (0, 2, 1, 3, 2, 1)
     for bar_index, (bass_note, chord) in enumerate(chords):
         bar_start = bar_index * BAR
-        pad_amplitude = 0.026 if bar_index < 8 else 0.035
+        pad_amplitude = 0.014 if bar_index < 9 else 0.018
         for chord_index, note in enumerate(chord[:3]):
             add_tone(bar_start, BAR + 0.8, note, pad_amplitude, (chord_index - 1) * 0.42, "pad")
-        add_tone(bar_start, BAR * 0.92, bass_note, 0.055, -0.12, "bass")
+        add_tone(bar_start, BAR * 0.92, bass_note, 0.032, -0.12, "bass")
         for step, chord_index in enumerate(arpeggio_order):
             octave = 12 if step in (3, 4) else 0
             add_tone(
                 bar_start + step * EIGHTH,
                 EIGHTH * 2.3,
                 chord[chord_index] + 12 + octave,
-                0.052 if bar_index < 16 else 0.06,
+                0.026 if bar_index < 18 else 0.03,
                 -0.48 + step * 0.19,
                 "celesta",
             )
         # A soft harp pulse on beats one and four gives the track a waltz lift.
-        add_tone(bar_start, EIGHTH * 2.0, chord[0] + 12, 0.038, -0.42, "harp")
-        add_tone(bar_start + EIGHTH * 3, EIGHTH * 2.0, chord[2] + 12, 0.036, 0.42, "harp")
+        add_tone(bar_start, EIGHTH * 2.0, chord[0] + 12, 0.018, -0.42, "harp")
+        add_tone(bar_start + EIGHTH * 3, EIGHTH * 2.0, chord[2] + 12, 0.017, 0.42, "harp")
 
-    # Traditional Happy Birthday melody. Values are (bar, eighth, MIDI note, length).
+    # Traditional Happy Birthday melody in its recognizable pickup-and-three-beat phrasing.
+    # Values are (MIDI note, duration in eighth notes). Each verse fills exactly nine bars.
     birthday_melody = [
-        (0, 0, 67, 1), (0, 1, 67, 1), (0, 2, 69, 2), (0, 4, 67, 2),
-        (1, 0, 72, 2), (1, 2, 71, 4),
-        (2, 0, 67, 1), (2, 1, 67, 1), (2, 2, 69, 2), (2, 4, 67, 2),
-        (3, 0, 74, 2), (3, 2, 72, 4),
-        (4, 0, 67, 1), (4, 1, 67, 1), (4, 2, 79, 2), (4, 4, 76, 2),
-        (5, 0, 72, 2), (5, 2, 71, 2), (5, 4, 69, 2),
-        (6, 0, 77, 1), (6, 1, 77, 1), (6, 2, 76, 2), (6, 4, 72, 2),
-        (7, 0, 74, 2), (7, 2, 72, 4),
+        (67, 1), (67, 1), (69, 2), (67, 2), (72, 2), (71, 4),
+        (67, 1), (67, 1), (69, 2), (67, 2), (74, 2), (72, 4),
+        (67, 1), (67, 1), (79, 2), (76, 2), (72, 2), (71, 2), (69, 2),
+        (77, 1), (77, 1), (76, 2), (72, 2), (74, 2), (72, 6),
     ]
     for verse in range(3):
-        octave = 12 if verse == 2 else 0
-        verse_amplitude = (0.078, 0.088, 0.092)[verse]
-        for bar_index, step, note, length in birthday_melody:
+        cursor = verse * 9 * BAR + EIGHTH * 4
+        verse_amplitude = (0.145, 0.16, 0.175)[verse]
+        for note, length in birthday_melody:
             add_tone(
-                (bar_index + verse * 8) * BAR + step * EIGHTH,
-                length * EIGHTH * 1.25,
-                note + octave,
+                cursor,
+                length * EIGHTH * 0.96,
+                note,
                 verse_amplitude,
-                0.08,
-                "celesta",
+                -0.03,
+                "lead",
             )
+            cursor += length * EIGHTH
 
     random.seed(26)
-    for bar_index in (3, 7, 11, 15, 19, 23):
+    for bar_index in (8, 17, 26):
         for sparkle in range(5):
             add_tone(
                 bar_index * BAR + EIGHTH * (3.8 + sparkle * 0.42),
                 1.8,
                 random.choice((91, 93, 95, 96, 98)),
-                0.026,
+                0.012,
                 -0.75 + sparkle * 0.34,
                 "celesta",
             )
