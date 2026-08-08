@@ -214,6 +214,73 @@ function MagicInvitation({ onReveal }) {
   );
 }
 
+function SignatureReveal({ onComplete }) {
+  const reduceMotion = useReducedMotion();
+  const completedRef = useRef(false);
+  const completeRef = useRef(onComplete);
+  completeRef.current = onComplete;
+  const sparks = Array.from({ length: 18 }, (_, index) => ({
+    id: index,
+    left: `${7 + ((index * 29) % 86)}%`,
+    top: `${10 + ((index * 37) % 74)}%`,
+    delay: `${0.35 + (index % 7) * 0.16}s`,
+  }));
+
+  const finishReveal = () => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    completeRef.current();
+  };
+
+  useEffect(() => {
+    const fallback = window.setTimeout(finishReveal, reduceMotion ? 120 : 4800);
+    return () => window.clearTimeout(fallback);
+  }, [reduceMotion]);
+
+  return (
+    <motion.div
+      className="signature-reveal-screen"
+      role="status"
+      aria-live="polite"
+      aria-label="Birthday magic is signing Ritika's invitation"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: reduceMotion ? 0 : 0.25 }}
+    >
+      <div className="spell-vignette" aria-hidden="true" />
+      <div className="spell-flash" aria-hidden="true" />
+      <div className="spell-curtain spell-curtain-left" aria-hidden="true" />
+      <div className="spell-curtain spell-curtain-right" aria-hidden="true" />
+      <div className="wand-flight" aria-hidden="true"><i /></div>
+      <div className="spell-sparks" aria-hidden="true">
+        {sparks.map((spark) => (
+          <i key={spark.id} style={{ left: spark.left, top: spark.top, animationDelay: spark.delay }} />
+        ))}
+      </div>
+
+      <div className="signature-stage">
+        <p className="spell-awakens">THE ENCHANTED SEAL HAS CHOSEN</p>
+        <div className="signature-name" aria-label="Ritika">
+          <span aria-hidden="true">Ritika</span>
+          <i aria-hidden="true" />
+        </div>
+        <p className="signature-birthday">Happy Birthday</p>
+        <div className="spell-divider" aria-hidden="true"><span>✦</span><i /><span>⚡</span><i /><span>✦</span></div>
+        <p className="spell-promise">Your magical adventure is about to begin…</p>
+      </div>
+
+      <button type="button" className="skip-signature" onClick={finishReveal}>Skip reveal</button>
+      <span
+        className="signature-sequence-timer"
+        data-testid="signature-sequence"
+        aria-hidden="true"
+        onAnimationEnd={finishReveal}
+      />
+    </motion.div>
+  );
+}
+
 function Welcome({ onEnter, music }) {
   const reduceMotion = useReducedMotion();
   const floaters = ["✦", "☾", "✧", "★", "⚡", "♡", "✦", "☼"];
@@ -816,6 +883,7 @@ function ResetConfirmation({ open, onCancel, onConfirm }) {
 
 function App() {
   const [invitationOpen, setInvitationOpen] = useState(true);
+  const [signatureOpen, setSignatureOpen] = useState(false);
   const [welcomeOpen, setWelcomeOpen] = useState(true);
   const [unlocked, setUnlocked] = useState(() => {
     try {
@@ -836,7 +904,12 @@ function App() {
 
   const revealBirthday = () => {
     setInvitationOpen(false);
-    window.setTimeout(() => document.querySelector(".welcome-card h1")?.focus?.(), 150);
+    setSignatureOpen(true);
+  };
+
+  const completeSignatureReveal = () => {
+    setSignatureOpen(false);
+    window.setTimeout(() => document.querySelector(".welcome-card .primary-button")?.focus(), 150);
   };
 
   const thanosReset = () => {
@@ -850,6 +923,7 @@ function App() {
     setResetOpen(false);
     setUnlocked(false);
     setFinaleOpen(false);
+    setSignatureOpen(false);
     setInvitationOpen(true);
     setWelcomeOpen(true);
     setRunId((value) => value + 1);
@@ -865,11 +939,12 @@ function App() {
     <div className="memory-app-root" style={themeStyle}>
       <a className="skip-link" href="#main-content">Skip to memories</a>
       <AnimatePresence>{invitationOpen && <MagicInvitation onReveal={revealBirthday} />}</AnimatePresence>
-      <AnimatePresence>{!invitationOpen && welcomeOpen && <Welcome onEnter={enter} music={music} />}</AnimatePresence>
+      <AnimatePresence>{signatureOpen && <SignatureReveal onComplete={completeSignatureReveal} />}</AnimatePresence>
+      <AnimatePresence>{!invitationOpen && !signatureOpen && welcomeOpen && <Welcome onEnter={enter} music={music} />}</AnimatePresence>
       <div
-        className={invitationOpen || welcomeOpen ? "app-shell app-hidden" : "app-shell"}
-        aria-hidden={invitationOpen || welcomeOpen}
-        inert={invitationOpen || welcomeOpen}
+        className={invitationOpen || signatureOpen || welcomeOpen ? "app-shell app-hidden" : "app-shell"}
+        aria-hidden={invitationOpen || signatureOpen || welcomeOpen}
+        inert={invitationOpen || signatureOpen || welcomeOpen}
       >
         <Header music={music} />
         <main id="main-content" key={runId}>

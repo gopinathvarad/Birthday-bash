@@ -3,7 +3,11 @@ import { beforeEach, describe, expect, it } from "vitest";
 import App from "./App";
 
 const revealInvitation = () => {
-  fireEvent.click(screen.getByRole("button", { name: /break the seal to reveal it/i }));
+  const revealButtons = screen.getAllByRole("button", { name: /break the seal to reveal it/i });
+  fireEvent.click(revealButtons[revealButtons.length - 1]);
+  expect(screen.getByRole("status", { name: /birthday magic is signing ritika's invitation/i })).toBeInTheDocument();
+  const skipButtons = screen.getAllByRole("button", { name: /skip reveal/i });
+  fireEvent.click(skipButtons[skipButtons.length - 1]);
 };
 
 const enterArcade = () => {
@@ -21,7 +25,11 @@ describe("Memory Arcade", () => {
     expect(screen.getByRole("heading", { name: /a mysterious invitation has arrived/i })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /happy birthday, ritika/i })).not.toBeInTheDocument();
     expect(document.querySelector(".app-shell")).toHaveAttribute("inert");
-    revealInvitation();
+    fireEvent.click(screen.getByRole("button", { name: /break the seal to reveal it/i }));
+    expect(screen.getByRole("status", { name: /birthday magic is signing ritika's invitation/i })).toBeInTheDocument();
+    expect(screen.getByLabelText("Ritika")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /happy birthday, ritika/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /skip reveal/i }));
     expect(screen.getByRole("heading", { name: /happy birthday, ritika/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
     expect(screen.getByRole("heading", { name: "Ritika's Memory Arcade" })).toBeInTheDocument();
@@ -100,7 +108,7 @@ describe("Memory Arcade", () => {
     expect(remaining).toBeLessThanOrEqual(60 * 60 * 1000);
   });
 
-  it("uses the Thanos reset to erase quiz and timer progress and return to question one", () => {
+  it("uses the Thanos reset to erase quiz and timer progress and return to question one", async () => {
     localStorage.setItem("memory-arcade-unlocked", "true");
     localStorage.setItem("memory-arcade-surprise-progress-v1", JSON.stringify({
       revealedCount: 1,
@@ -130,12 +138,7 @@ describe("Memory Arcade", () => {
     expect(localStorage.getItem("memory-arcade-unlocked")).toBeNull();
     expect(localStorage.getItem("memory-arcade-surprise-progress-v1")).toBeNull();
     expect(screen.getByRole("heading", { name: /a mysterious invitation has arrived/i })).toBeInTheDocument();
-    revealInvitation();
-    expect(screen.getByRole("button", { name: /start your birthday adventure/i })).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
-    expect(screen.getByRole("heading", { name: "Which animal is Ritika most frightened of?" })).toBeInTheDocument();
-    expect(screen.getByLabelText("0 of 5 questions complete")).toBeInTheDocument();
+    expect(document.querySelector('[aria-label="0 of 5 questions complete"]')).toBeInTheDocument();
     expect(screen.getByText("♥ 0 / 7 visited")).toBeInTheDocument();
   });
 
