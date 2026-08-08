@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Create an original, ad-free magical waltz for Ritika's Memory Arcade.
+"""Create an elegant, ad-free Happy Birthday waltz for Ritika's Memory Arcade.
 
-The composition and melody below are original and are not a transcription of
-any film score. The script writes a temporary WAV, then uses ffmpeg to create a
-compact MP3 suitable for on-demand mobile playback.
+This arrangement uses the traditional Happy Birthday melody with an original
+celesta, harp, and warm-string accompaniment. The script writes a temporary
+WAV, then uses ffmpeg to create a compact MP3 for on-demand mobile playback.
 """
 
 from __future__ import annotations
@@ -100,21 +100,18 @@ def main() -> None:
             left[index] += sample * gain_l
             right[index] += sample * gain_r
 
-    # A minor-centred 6/8 progression with a bright, celebratory middle act.
-    chords = [
-        (45, (57, 60, 64, 71)), (41, (53, 57, 60, 64)),
-        (48, (55, 60, 64, 71)), (40, (52, 55, 59, 62)),
-        (38, (50, 53, 57, 64)), (45, (52, 57, 60, 64)),
-        (41, (53, 57, 60, 64)), (40, (52, 56, 59, 62)),
-        (45, (57, 60, 64, 71)), (48, (55, 60, 64, 71)),
-        (53, (60, 65, 69, 72)), (43, (55, 59, 62, 67)),
-        (48, (55, 60, 64, 67)), (50, (57, 62, 65, 69)),
-        (53, (60, 65, 69, 72)), (52, (56, 59, 64, 71)),
-        (45, (57, 60, 64, 71)), (41, (53, 57, 60, 64)),
-        (38, (50, 53, 57, 64)), (40, (52, 56, 59, 62)),
-        (45, (57, 60, 64, 71)), (41, (53, 57, 60, 64)),
-        (40, (52, 56, 59, 62)), (45, (57, 60, 64, 69)),
+    # Eight supportive 6/8 bars, repeated three times with a gentle lift.
+    birthday_progression = [
+        (48, (55, 60, 64, 67)),  # C
+        (40, (52, 55, 60, 64)),  # C/E
+        (43, (55, 59, 62, 65)),  # G7
+        (48, (55, 60, 64, 67)),  # C
+        (48, (55, 60, 64, 67)),  # C
+        (41, (53, 57, 60, 65)),  # F
+        (43, (55, 59, 62, 65)),  # G7
+        (48, (55, 60, 64, 67)),  # C
     ]
+    chords = birthday_progression * 3
 
     arpeggio_order = (0, 2, 1, 3, 2, 1)
     for bar_index, (bass_note, chord) in enumerate(chords):
@@ -137,27 +134,29 @@ def main() -> None:
         add_tone(bar_start, EIGHTH * 2.0, chord[0] + 12, 0.038, -0.42, "harp")
         add_tone(bar_start + EIGHTH * 3, EIGHTH * 2.0, chord[2] + 12, 0.036, 0.42, "harp")
 
-    # Original, sparse birthday-adventure motif. Values are (bar, eighth, MIDI note, length).
-    melody = [
-        (0, 0, 76, 2), (0, 2, 79, 1), (0, 3, 81, 3),
-        (1, 1, 84, 2), (1, 3, 83, 1), (1, 4, 79, 2),
-        (2, 0, 76, 1), (2, 1, 79, 1), (2, 2, 84, 2), (2, 4, 86, 2),
-        (3, 0, 83, 2), (3, 2, 79, 1), (3, 3, 78, 3),
-        (8, 0, 81, 2), (8, 2, 84, 1), (8, 3, 88, 3),
-        (9, 0, 86, 1), (9, 1, 84, 1), (9, 2, 79, 2), (9, 4, 81, 2),
-        (10, 0, 84, 2), (10, 2, 89, 1), (10, 3, 88, 3),
-        (11, 0, 86, 2), (11, 2, 83, 1), (11, 3, 79, 3),
-        (16, 0, 76, 2), (16, 2, 81, 1), (16, 3, 84, 3),
-        (17, 0, 83, 1), (17, 1, 81, 1), (17, 2, 79, 2), (17, 4, 76, 2),
-        (18, 0, 77, 2), (18, 2, 81, 1), (18, 3, 86, 3),
-        (19, 0, 83, 2), (19, 2, 80, 1), (19, 3, 76, 3),
-        (20, 0, 81, 2), (20, 2, 84, 1), (20, 3, 88, 3),
-        (21, 0, 86, 1), (21, 1, 84, 1), (21, 2, 81, 2), (21, 4, 79, 2),
-        (22, 0, 80, 2), (22, 2, 83, 1), (22, 3, 88, 3),
-        (23, 0, 85, 1), (23, 1, 83, 1), (23, 2, 81, 1), (23, 3, 76, 3),
+    # Traditional Happy Birthday melody. Values are (bar, eighth, MIDI note, length).
+    birthday_melody = [
+        (0, 0, 67, 1), (0, 1, 67, 1), (0, 2, 69, 2), (0, 4, 67, 2),
+        (1, 0, 72, 2), (1, 2, 71, 4),
+        (2, 0, 67, 1), (2, 1, 67, 1), (2, 2, 69, 2), (2, 4, 67, 2),
+        (3, 0, 74, 2), (3, 2, 72, 4),
+        (4, 0, 67, 1), (4, 1, 67, 1), (4, 2, 79, 2), (4, 4, 76, 2),
+        (5, 0, 72, 2), (5, 2, 71, 2), (5, 4, 69, 2),
+        (6, 0, 77, 1), (6, 1, 77, 1), (6, 2, 76, 2), (6, 4, 72, 2),
+        (7, 0, 74, 2), (7, 2, 72, 4),
     ]
-    for bar_index, step, note, length in melody:
-        add_tone(bar_index * BAR + step * EIGHTH, length * EIGHTH * 1.4, note, 0.085, 0.08, "celesta")
+    for verse in range(3):
+        octave = 12 if verse == 2 else 0
+        verse_amplitude = (0.078, 0.088, 0.092)[verse]
+        for bar_index, step, note, length in birthday_melody:
+            add_tone(
+                (bar_index + verse * 8) * BAR + step * EIGHTH,
+                length * EIGHTH * 1.25,
+                note + octave,
+                verse_amplitude,
+                0.08,
+                "celesta",
+            )
 
     random.seed(26)
     for bar_index in (3, 7, 11, 15, 19, 23):
@@ -202,7 +201,7 @@ def main() -> None:
             [
                 "ffmpeg", "-y", "-loglevel", "error", "-i", temporary.name,
                 "-codec:a", "libmp3lame", "-b:a", "128k",
-                "-metadata", "title=Moonlit Birthday Waltz",
+                "-metadata", "title=Happy Birthday Waltz for Ritika",
                 "-metadata", "artist=Made for Ritika's Memory Arcade",
                 str(args.output),
             ],
