@@ -35,7 +35,7 @@ describe("Memory Arcade", () => {
     expect(screen.getByText(/suspects selective memory/i)).toBeInTheDocument();
   });
 
-  it("reveals the wand first and starts the one-hour lock", () => {
+  it("reveals the wand first and starts the eight-hour thirty-minute lock", () => {
     localStorage.setItem("memory-arcade-unlocked", "true");
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
@@ -49,10 +49,12 @@ describe("Memory Arcade", () => {
 
     const savedProgress = JSON.parse(localStorage.getItem("memory-arcade-surprise-progress-v1"));
     expect(savedProgress.revealedCount).toBe(1);
-    expect(savedProgress.nextUnlockAt).toBeGreaterThan(Date.now());
+    const remaining = savedProgress.nextUnlockAt - Date.now();
+    expect(remaining).toBeGreaterThan(8 * 60 * 60 * 1000);
+    expect(remaining).toBeLessThanOrEqual(8.5 * 60 * 60 * 1000);
   });
 
-  it("allows the Shard reveal when the saved hour has elapsed", () => {
+  it("allows the Shard reveal when the saved first lock has elapsed, then starts a one-hour lock", () => {
     localStorage.setItem("memory-arcade-unlocked", "true");
     localStorage.setItem("memory-arcade-surprise-progress-v1", JSON.stringify({
       revealedCount: 1,
@@ -64,6 +66,12 @@ describe("Memory Arcade", () => {
     fireEvent.click(screen.getByRole("button", { name: /reveal surprise 2 of 5/i }));
     expect(screen.getByRole("heading", { name: "A Date Above London" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /surprise 3 is locked/i })).toBeDisabled();
+
+    const savedProgress = JSON.parse(localStorage.getItem("memory-arcade-surprise-progress-v1"));
+    const remaining = savedProgress.nextUnlockAt - Date.now();
+    expect(savedProgress.revealedCount).toBe(2);
+    expect(remaining).toBeGreaterThan(59 * 60 * 1000);
+    expect(remaining).toBeLessThanOrEqual(60 * 60 * 1000);
   });
 
   it("uses the Thanos reset to erase quiz and timer progress and return to question one", () => {
@@ -83,6 +91,14 @@ describe("Memory Arcade", () => {
     expect(screen.getByRole("alertdialog", { name: /start the entire arcade again/i })).toBeInTheDocument();
     expect(localStorage.getItem("memory-arcade-unlocked")).toBe("true");
     expect(localStorage.getItem("memory-arcade-surprise-progress-v1")).not.toBeNull();
+
+    fireEvent.change(screen.getByLabelText(/reset password/i), { target: { value: "wrong" } });
+    fireEvent.click(screen.getByRole("button", { name: /yes, erase everything/i }));
+    expect(screen.getByRole("alert")).toHaveTextContent(/password is incorrect/i);
+    expect(localStorage.getItem("memory-arcade-unlocked")).toBe("true");
+    expect(localStorage.getItem("memory-arcade-surprise-progress-v1")).not.toBeNull();
+
+    fireEvent.change(screen.getByLabelText(/reset password/i), { target: { value: "GV" } });
     fireEvent.click(screen.getByRole("button", { name: /yes, erase everything/i }));
 
     expect(localStorage.getItem("memory-arcade-unlocked")).toBeNull();

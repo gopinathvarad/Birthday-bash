@@ -7,15 +7,15 @@ export const memoryData = {
     herName: "Ritika",
     herNickname: "Ritika",
     yourName: "Gopinath Varadarajan",
-    eyebrow: "A birthday adventure, made just for you",
+    eyebrow: "A magical birthday adventure, made just for you",
     title: "Ritika's Memory Arcade",
     greeting: "Happy Birthday, Ritika!",
     intro:
-      "Seven memories, five questions, and a collection of birthday surprises are waiting inside. Ready to revisit some of our best adventures?",
+      "Seven memories, five questions, and a little birthday magic are waiting inside. Ready to revisit some of our best adventures?",
     enterLabel: "Start your birthday adventure ✦",
     music: {
-      title: "Happy Birthday — instrumental",
-      src: publicAsset("/audio/happy-birthday-instrumental.mp3?v=1"),
+      title: "An original magical birthday overture",
+      src: publicAsset("/audio/magical-birthday-overture.mp3?v=1"),
     },
     theme: {
       paper: "#fffaf0",
@@ -26,6 +26,8 @@ export const memoryData = {
       lavender: "#c8b8dc",
       sage: "#b7c8ae",
       butter: "#f5df91",
+      night: "#211a35",
+      gold: "#c49b4a",
     },
   },
 
@@ -179,7 +181,7 @@ export const memoryData = {
   finale: {
     eyebrow: "Final level · timed birthday itinerary",
     heading: "Five surprises for Ritika",
-    intro: "Reveal the first surprise now. After every ticket, the Memory Arcade will make you wait one hour before the next mystery unlocks.",
+    intro: "Reveal the wand now. Its magic seals the next ticket for eight hours and thirty minutes; after that, each new surprise unlocks one hour after the last.",
   },
 
   finaleTickets: [

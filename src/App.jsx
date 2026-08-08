@@ -4,7 +4,8 @@ import { memoryData, publicAsset } from "./memoryData";
 
 const STORAGE_KEY = "memory-arcade-unlocked";
 const SURPRISE_PROGRESS_KEY = "memory-arcade-surprise-progress-v1";
-const SURPRISE_WAIT_MS = 60 * 60 * 1000;
+const FIRST_SURPRISE_WAIT_MS = 8.5 * 60 * 60 * 1000;
+const FOLLOWUP_SURPRISE_WAIT_MS = 60 * 60 * 1000;
 
 function readSurpriseProgress() {
   try {
@@ -147,7 +148,7 @@ function MusicToggle({ playing, error, onToggle }) {
 
 function Welcome({ onEnter, music }) {
   const reduceMotion = useReducedMotion();
-  const floaters = ["✦", "♡", "✿", "★", "☁", "♥", "✦", "☼"];
+  const floaters = ["✦", "☾", "✧", "★", "⚡", "♡", "✦", "☼"];
 
   return (
     <motion.div
@@ -198,7 +199,7 @@ function Header({ music }) {
   return (
     <header className="site-header">
       <a href="#top" className="brand" aria-label="Memory Arcade home">
-        <span aria-hidden="true">♥</span> memory arcade
+        <span aria-hidden="true">✧</span> memory arcade
       </a>
       <nav aria-label="Main navigation">
         <a href="#map">Map</a>
@@ -564,14 +565,18 @@ function FinaleModal({ open, onClose }) {
   const canRevealNext = !allRevealed
     && (progress.revealedCount === 0 || !progress.nextUnlockAt || waitRemaining === 0);
   const nextNumber = progress.revealedCount + 1;
+  const isWandToSecondWait = progress.revealedCount === 1;
 
   const revealNext = () => {
     if (!canRevealNext) return;
     const revealedAt = Date.now();
     const revealedCount = Math.min(totalSurprises, progress.revealedCount + 1);
+    const waitDuration = revealedCount === 1
+      ? FIRST_SURPRISE_WAIT_MS
+      : FOLLOWUP_SURPRISE_WAIT_MS;
     const nextProgress = {
       revealedCount,
-      nextUnlockAt: revealedCount < totalSurprises ? revealedAt + SURPRISE_WAIT_MS : null,
+      nextUnlockAt: revealedCount < totalSurprises ? revealedAt + waitDuration : null,
     };
     try {
       localStorage.setItem(SURPRISE_PROGRESS_KEY, JSON.stringify(nextProgress));
@@ -637,7 +642,11 @@ function FinaleModal({ open, onClose }) {
                   <span className="unlock-icon" aria-hidden="true">{nextNumber === 1 ? "✧" : "🔓"}</span>
                   <p className="eyebrow">Surprise {nextNumber} of {totalSurprises} is ready</p>
                   <h3>{nextNumber === 1 ? "Let the wand choose you" : "Your next mystery is waiting"}</h3>
-                  <p>{nextNumber === 1 ? "The first ticket is yours immediately." : "The one-hour spell has lifted. Tap when you are ready."}</p>
+                  <p>{nextNumber === 1
+                    ? "The first ticket is yours immediately."
+                    : nextNumber === 2
+                      ? "The eight-hour thirty-minute spell has lifted. Tap when you are ready."
+                      : "The one-hour spell has lifted. Tap when you are ready."}</p>
                   <button type="button" className="primary-button" onClick={revealNext}>
                     Reveal surprise {nextNumber} of {totalSurprises} ✦
                   </button>
@@ -645,7 +654,7 @@ function FinaleModal({ open, onClose }) {
               ) : (
                 <>
                   <span className="unlock-icon" aria-hidden="true">⌛</span>
-                  <p className="eyebrow">One-hour mystery lock</p>
+                  <p className="eyebrow">{isWandToSecondWait ? "Eight-hour thirty-minute mystery lock" : "One-hour mystery lock"}</p>
                   <h3>Next surprise unlocks in</h3>
                   <time className="surprise-countdown" dateTime={`PT${Math.ceil(waitRemaining / 1000)}S`}>
                     {formatCountdown(waitRemaining)}
@@ -673,6 +682,18 @@ function FinaleModal({ open, onClose }) {
 function ResetConfirmation({ open, onCancel, onConfirm }) {
   const dialogRef = useDialog(open, onCancel);
   const reduceMotion = useReducedMotion();
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const submitReset = (event) => {
+    event.preventDefault();
+    if (password.trim() !== "GV") {
+      setPasswordError("That password is incorrect. Progress has not been erased.");
+      return;
+    }
+    setPasswordError("");
+    onConfirm();
+  };
 
   if (!open) return null;
 
@@ -685,7 +706,7 @@ function ResetConfirmation({ open, onCancel, onConfirm }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <motion.div
+      <motion.form
         ref={dialogRef}
         className="reset-dialog"
         role="alertdialog"
@@ -695,16 +716,32 @@ function ResetConfirmation({ open, onCancel, onConfirm }) {
         initial={reduceMotion ? false : { opacity: 0, y: 20, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 12, scale: 0.98 }}
+        onSubmit={submitReset}
       >
         <span className="reset-icon" aria-hidden="true">🫰</span>
         <p className="eyebrow">Thanos reset</p>
         <h2 id="reset-title">Start the entire arcade again?</h2>
-        <p id="reset-description">Are you sure? This will erase every visited memory, quiz answer, revealed surprise and active timer on this browser.</p>
+        <p id="reset-description">Are you sure? This will erase every visited memory, quiz answer, revealed surprise and active timer on this browser. Enter the reset password to continue.</p>
+        <div className="reset-password-field">
+          <label htmlFor="thanos-password">Reset password</label>
+          <input
+            id="thanos-password"
+            type="password"
+            value={password}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              if (passwordError) setPasswordError("");
+            }}
+            autoComplete="off"
+            spellCheck="false"
+          />
+          <p className="reset-error" role="alert" aria-live="polite">{passwordError}</p>
+        </div>
         <div className="reset-actions">
           <button type="button" className="secondary-button" onClick={onCancel}>Keep my progress</button>
-          <button type="button" className="primary-button reset-confirm-button" onClick={onConfirm}>Yes, erase everything</button>
+          <button type="submit" className="primary-button reset-confirm-button">Yes, erase everything</button>
         </div>
-      </motion.div>
+      </motion.form>
     </motion.div>
   );
 }
@@ -764,7 +801,7 @@ function App() {
             <div className="hero-copy">
               <p className="eyebrow">Welcome, player one</p>
               <h1>{memoryData.site.title}</h1>
-              <p>Seven little worlds from one very good story.</p>
+              <p>Seven little worlds, one very good story, and just enough magic.</p>
               <a href="#map" className="text-link">Start at the beginning <span aria-hidden="true">↓</span></a>
             </div>
             <div className="hero-polaroids">
