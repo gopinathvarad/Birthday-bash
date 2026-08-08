@@ -649,7 +649,7 @@ function FinaleModal({ open, onClose }) {
                   <time className="surprise-countdown" dateTime={`PT${Math.ceil(waitRemaining / 1000)}S`}>
                     {formatCountdown(waitRemaining)}
                   </time>
-                  <p>Come back at {new Date(progress.nextUnlockAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}. The countdown survives a refresh.</p>
+                        <p>Come back at {new Date(progress.nextUnlockAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.</p>
                   <button type="button" className="primary-button" disabled>
                     Surprise {nextNumber} is locked 🔒
                   </button>
