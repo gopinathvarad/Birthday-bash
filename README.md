@@ -2,7 +2,7 @@
 
 A mobile-first, single-page birthday experience built with React, Vite, Tailwind CSS, and Framer Motion. It combines a scrapbook-style memory map, a relationship quiz, a birthday message, instrumental music, and a timed five-surprise finale.
 
-The site also includes mobile-sized WebP photography, a custom favicon, and a 1200×630 social-sharing preview image. Original JPEG photographs remain preserved in `public/`, while the live experience serves the smaller WebP versions.
+The site also includes mobile-sized, metadata-stripped WebP photography, a custom favicon, and a 1200×630 social-sharing preview image. Original JPEG photographs are kept in a private backup outside the deployed project so the public site exposes only the optimized copies.
 
 ## Experience
 
@@ -26,8 +26,8 @@ The flexible ticket labels `DATE TO BE REVEALED` and `SAILING SOON` are intentio
 - `src/memoryData.js` — names, stories, quiz answers, ticket copy, image paths, and theme values
 - `src/App.jsx` — experience logic, accessible dialogs, music controls, quiz, and timed reveals
 - `src/index.css` — scrapbook layout, responsive styling, animation, and print styles
-- `public/photos/` — welcome and relationship photographs
-- `public/surprises/` — five finale ticket images
+- `public/photos/` — optimized welcome and relationship photographs
+- `public/surprises/` — optimized finale ticket images
 - `public/audio/` — local instrumental Happy Birthday track
 - `scripts/generate_birthday_song.py` — reproducible backing-track generator
 
@@ -65,7 +65,7 @@ The finale timer uses these browser storage keys:
 
 Clearing browser site data resets the experience. Because the website is entirely static, the timer is a playful client-side lock rather than a tamper-proof security control.
 
-Before presenting the site, use the footer's **Thanos reset** button. It clears quiz completion, visited memories, revealed surprise tickets, the one-hour countdown, music playback, modal state, and the URL hash, then returns to the welcome screen and question one.
+Before presenting the site, use the footer's **Thanos reset** button and confirm the warning. It clears quiz completion, visited memories, revealed surprise tickets, the one-hour countdown, music playback, modal state, and the URL hash, then returns to the welcome screen and question one. Cancelling the warning preserves all progress.
 
 ## Deployment
 
