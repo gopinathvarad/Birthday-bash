@@ -19,6 +19,10 @@ const enterArcade = () => {
 describe("Memory Arcade", () => {
   beforeEach(() => {
     localStorage.clear();
+    document.cookie.split(";").forEach((entry) => {
+      const name = entry.split("=")[0].trim();
+      if (name) document.cookie = `${name}=; Max-Age=0; Path=/`;
+    });
   });
 
   it("reveals the birthday welcome from the enchanted invitation", () => {
@@ -134,6 +138,28 @@ describe("Memory Arcade", () => {
     expect(restoredProgress.nextUnlockAt).toBe(savedProgress.nextUnlockAt);
   });
 
+  it("restores the exact timer from its durable cookie backup after browser storage is lost", () => {
+    localStorage.setItem("memory-arcade-unlocked", "true");
+    const firstVisit = render(<App />);
+    enterArcade();
+    fireEvent.click(screen.getByRole("button", { name: /reveal all five surprises/i }));
+    fireEvent.click(screen.getByRole("button", { name: /reveal surprise 1 of 5/i }));
+    fireEvent.click(screen.getByRole("button", { name: /reveal surprise 2 of 5/i }));
+    const savedProgress = JSON.parse(localStorage.getItem("memory-arcade-surprise-progress-v1"));
+
+    firstVisit.unmount();
+    localStorage.clear();
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /reveal all five surprises/i }));
+
+    expect(screen.getByRole("heading", { name: "The Wand Chooses Ritika" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "A Date Above London" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /surprise 3 is locked/i })).toBeDisabled();
+    const restoredProgress = JSON.parse(localStorage.getItem("memory-arcade-surprise-progress-v1"));
+    expect(restoredProgress.revealedCount).toBe(2);
+    expect(restoredProgress.nextUnlockAt).toBe(savedProgress.nextUnlockAt);
+  });
+
   it("uses the Thanos reset to erase quiz and timer progress and return to question one", async () => {
     localStorage.setItem("memory-arcade-unlocked", "true");
     localStorage.setItem("memory-arcade-surprise-progress-v1", JSON.stringify({
@@ -164,6 +190,8 @@ describe("Memory Arcade", () => {
     expect(localStorage.getItem("memory-arcade-unlocked")).toBeNull();
     expect(localStorage.getItem("memory-arcade-experience-progress-v1")).toBeNull();
     expect(localStorage.getItem("memory-arcade-surprise-progress-v1")).toBeNull();
+    expect(document.cookie).not.toContain("memory-arcade-experience-progress-v1");
+    expect(document.cookie).not.toContain("memory-arcade-surprise-progress-v1");
     expect(screen.getByRole("heading", { name: /a mysterious invitation has arrived/i })).toBeInTheDocument();
     expect(document.querySelector('[aria-label="0 of 5 questions complete"]')).toBeInTheDocument();
     expect(screen.getByText("♥ 0 / 7 visited")).toBeInTheDocument();

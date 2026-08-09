@@ -6,7 +6,74 @@ const STORAGE_KEY = "memory-arcade-unlocked";
 const EXPERIENCE_PROGRESS_KEY = "memory-arcade-experience-progress-v1";
 const SURPRISE_PROGRESS_KEY = "memory-arcade-surprise-progress-v1";
 const FOLLOWUP_SURPRISE_WAIT_MS = 60 * 60 * 1000;
+const COOKIE_MAX_AGE_SECONDS = 365 * 24 * 60 * 60;
 const EXPERIENCE_STAGES = new Set(["invitation", "signature", "welcome", "arcade"]);
+
+function readCookie(name) {
+  if (typeof document === "undefined") return null;
+  const prefix = `${encodeURIComponent(name)}=`;
+  const entry = document.cookie.split("; ").find((cookie) => cookie.startsWith(prefix));
+  if (!entry) return null;
+  try {
+    return decodeURIComponent(entry.slice(prefix.length));
+  } catch {
+    return null;
+  }
+}
+
+function writeCookie(name, value) {
+  if (typeof document === "undefined") return;
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Max-Age=${COOKIE_MAX_AGE_SECONDS}; Path=/; SameSite=Lax${secure}`;
+}
+
+function removeCookie(name) {
+  if (typeof document === "undefined") return;
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${encodeURIComponent(name)}=; Max-Age=0; Path=/; SameSite=Lax${secure}`;
+}
+
+function readPersistentItem(key) {
+  let localValue = null;
+  try {
+    localValue = localStorage.getItem(key);
+  } catch {
+    // Fall through to the cookie backup.
+  }
+
+  if (localValue !== null) {
+    writeCookie(key, localValue);
+    return localValue;
+  }
+
+  const cookieValue = readCookie(key);
+  if (cookieValue !== null) {
+    try {
+      localStorage.setItem(key, cookieValue);
+    } catch {
+      // The cookie remains the durable source if local storage is unavailable.
+    }
+  }
+  return cookieValue;
+}
+
+function writePersistentItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // The cookie backup still preserves the progress.
+  }
+  writeCookie(key, value);
+}
+
+function removePersistentItem(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Continue so the cookie backup is still removed.
+  }
+  removeCookie(key);
+}
 
 function createDefaultExperienceProgress() {
   return {
@@ -19,8 +86,8 @@ function createDefaultExperienceProgress() {
 
 function readExperienceProgress() {
   try {
-    const saved = JSON.parse(localStorage.getItem(EXPERIENCE_PROGRESS_KEY) || "null");
-    const legacyUnlocked = localStorage.getItem(STORAGE_KEY) === "true";
+    const saved = JSON.parse(readPersistentItem(EXPERIENCE_PROGRESS_KEY) || "null");
+    const legacyUnlocked = readPersistentItem(STORAGE_KEY) === "true";
     const unlocked = Boolean(saved?.unlocked || legacyUnlocked);
     const validMilestoneIds = new Set(memoryData.milestones.map((milestone) => milestone.id));
     const visitedIds = Array.isArray(saved?.visitedIds)
@@ -47,8 +114,8 @@ function readExperienceProgress() {
 
 function saveExperienceProgress(progress) {
   try {
-    localStorage.setItem(EXPERIENCE_PROGRESS_KEY, JSON.stringify(progress));
-    if (progress.unlocked) localStorage.setItem(STORAGE_KEY, "true");
+    writePersistentItem(EXPERIENCE_PROGRESS_KEY, JSON.stringify(progress));
+    if (progress.unlocked) writePersistentItem(STORAGE_KEY, "true");
   } catch {
     // Progress still works for this visit if browser storage is unavailable.
   }
@@ -56,7 +123,7 @@ function saveExperienceProgress(progress) {
 
 function readSurpriseProgress() {
   try {
-    const saved = JSON.parse(localStorage.getItem(SURPRISE_PROGRESS_KEY) || "null");
+    const saved = JSON.parse(readPersistentItem(SURPRISE_PROGRESS_KEY) || "null");
     const revealedCount = Math.min(
       memoryData.finaleTickets.length,
       Math.max(0, Number.isInteger(saved?.revealedCount) ? saved.revealedCount : 0),
@@ -758,11 +825,7 @@ function FinaleModal({ open, onClose }) {
         ? revealedAt + waitDuration
         : null,
     };
-    try {
-      localStorage.setItem(SURPRISE_PROGRESS_KEY, JSON.stringify(nextProgress));
-    } catch {
-      // The timer still works for this visit if storage is unavailable.
-    }
+    writePersistentItem(SURPRISE_PROGRESS_KEY, JSON.stringify(nextProgress));
     setNow(revealedAt);
     setProgress(nextProgress);
   };
@@ -966,13 +1029,9 @@ function App() {
   };
 
   const thanosReset = () => {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(EXPERIENCE_PROGRESS_KEY);
-      localStorage.removeItem(SURPRISE_PROGRESS_KEY);
-    } catch {
-      // The in-memory reset still works when browser storage is unavailable.
-    }
+    removePersistentItem(STORAGE_KEY);
+    removePersistentItem(EXPERIENCE_PROGRESS_KEY);
+    removePersistentItem(SURPRISE_PROGRESS_KEY);
     music.stop();
     setResetOpen(false);
     setExperience(createDefaultExperienceProgress());
