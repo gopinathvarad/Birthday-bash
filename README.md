@@ -17,7 +17,7 @@ The site also includes mobile-sized, metadata-stripped WebP photography, a custo
    - Thames cruise
    - Warner Bros. Harry Potter Studio Tour
 
-The wand and The Shard are both available immediately, one after the other. Revealing The Shard starts a one-hour wait before the South Indian meal, and every later reveal starts another one-hour wait before the following ticket. Progress and unlock times are stored in the visitor's browser using `localStorage` and survive page refreshes.
+The wand and The Shard are both available immediately, one after the other. Revealing The Shard starts a one-hour wait before the South Indian meal, and every later reveal starts another one-hour wait before the following ticket. The opening stage, visited memories, partial quiz progress, quiz completion, revealed tickets, and exact unlock times are stored in the visitor's browser using `localStorage`. They survive page refreshes and closing and reopening the browser on the same device.
 
 The flexible ticket labels `DATE TO BE REVEALED` and `SAILING SOON` are intentional final copy for now: they preserve the surprise until the bookings are ready. Replace them in `src/memoryData.js` when the real dates should be shown.
 
@@ -58,12 +58,13 @@ The production build is written to `dist/`.
 
 Most editable content lives in `src/memoryData.js`. Quiz answer indexes are zero-based: `0` is the first option, `1` the second, and `2` the third.
 
-The finale timer uses these browser storage keys:
+The experience uses these browser storage keys:
 
+- `memory-arcade-experience-progress-v1` — opening stage, visited memories, and partial quiz progress
 - `memory-arcade-unlocked` — quiz completion
 - `memory-arcade-surprise-progress-v1` — revealed ticket count and next unlock time
 
-Clearing browser site data resets the experience. Because the website is entirely static, the timer is a playful client-side lock rather than a tamper-proof security control.
+Within the website, the password-protected **Thanos reset** is the only control that clears progress. Clearing the browser's site data outside the website will also remove device-local progress. Because the website is entirely static, the timer is a playful client-side lock rather than a tamper-proof security control, and progress does not transfer automatically to another device or browser.
 
 Before presenting the site, use the footer's **Thanos reset** button, enter the case-sensitive reset password `GV`, and confirm the warning. It clears quiz completion, visited memories, revealed surprise tickets, active countdowns, music playback, modal state, and the URL hash, then returns to the welcome screen and question one. Cancelling the warning or entering the wrong password preserves all progress.
 
