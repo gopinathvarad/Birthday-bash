@@ -5,6 +5,7 @@ import { memoryData, publicAsset } from "./memoryData";
 const STORAGE_KEY = "memory-arcade-unlocked";
 const EXPERIENCE_PROGRESS_KEY = "memory-arcade-experience-progress-v1";
 const SURPRISE_PROGRESS_KEY = "memory-arcade-surprise-progress-v1";
+const DURABLE_PROGRESS_KEY = "ritika-memory-arcade-progress-v2";
 const FOLLOWUP_SURPRISE_WAIT_MS = 60 * 60 * 1000;
 const COOKIE_MAX_AGE_SECONDS = 365 * 24 * 60 * 60;
 const EXPERIENCE_STAGES = new Set(["invitation", "signature", "welcome", "arcade"]);
@@ -136,6 +137,74 @@ function readSurpriseProgress() {
   } catch {
     return { revealedCount: 0, nextUnlockAt: null };
   }
+}
+
+function normalizeDurableProgress(saved) {
+  if (!saved || typeof saved !== "object") return null;
+  const validMilestoneIds = new Set(memoryData.milestones.map((milestone) => milestone.id));
+  const unlocked = Boolean(saved.unlocked);
+  const visitedIds = Array.isArray(saved.visitedIds)
+    ? [...new Set(saved.visitedIds.filter((id) => validMilestoneIds.has(id)))]
+    : [];
+  const maximumQuestion = unlocked
+    ? memoryData.quizQuestions.length
+    : memoryData.quizQuestions.length - 1;
+  const quizCurrent = Math.min(
+    maximumQuestion,
+    Math.max(0, Number.isInteger(saved.quizCurrent) ? saved.quizCurrent : 0),
+  );
+  const stage = EXPERIENCE_STAGES.has(saved.stage) ? saved.stage : "invitation";
+  const revealedCount = Math.min(
+    memoryData.finaleTickets.length,
+    Math.max(0, Number.isInteger(saved.surpriseProgress?.revealedCount)
+      ? saved.surpriseProgress.revealedCount
+      : 0),
+  );
+  const nextUnlockAt = revealedCount > 1 && revealedCount < memoryData.finaleTickets.length
+    && Number.isFinite(saved.surpriseProgress?.nextUnlockAt)
+    ? saved.surpriseProgress.nextUnlockAt
+    : null;
+
+  return {
+    stage,
+    visitedIds,
+    quizCurrent,
+    unlocked,
+    surpriseProgress: { revealedCount, nextUnlockAt },
+    updatedAt: Number.isFinite(saved.updatedAt) ? saved.updatedAt : Date.now(),
+  };
+}
+
+function saveDurableProgress(progress) {
+  const normalized = normalizeDurableProgress({ ...progress, updatedAt: Date.now() });
+  if (!normalized) return progress;
+  writePersistentItem(DURABLE_PROGRESS_KEY, JSON.stringify(normalized));
+  saveExperienceProgress({
+    stage: normalized.stage,
+    visitedIds: normalized.visitedIds,
+    quizCurrent: normalized.quizCurrent,
+    unlocked: normalized.unlocked,
+  });
+  writePersistentItem(SURPRISE_PROGRESS_KEY, JSON.stringify(normalized.surpriseProgress));
+  return normalized;
+}
+
+function readDurableProgress() {
+  try {
+    const saved = normalizeDurableProgress(JSON.parse(readPersistentItem(DURABLE_PROGRESS_KEY) || "null"));
+    if (saved) {
+      saveDurableProgress(saved);
+      return saved;
+    }
+  } catch {
+    // Migrate any valid progress still stored under the earlier keys.
+  }
+
+  return saveDurableProgress({
+    ...readExperienceProgress(),
+    surpriseProgress: readSurpriseProgress(),
+    updatedAt: Date.now(),
+  });
 }
 
 function formatCountdown(milliseconds) {
@@ -788,10 +857,9 @@ function SurpriseTicket({ ticket, index }) {
   );
 }
 
-function FinaleModal({ open, onClose }) {
+function FinaleModal({ open, onClose, progress, onProgressChange }) {
   const dialogRef = useDialog(open, onClose);
   const reduceMotion = useReducedMotion();
-  const [progress, setProgress] = useState(readSurpriseProgress);
   const [now, setNow] = useState(Date.now);
   const confetti = useMemo(() => Array.from({ length: 28 }, (_, index) => ({
     id: index,
@@ -827,7 +895,7 @@ function FinaleModal({ open, onClose }) {
     };
     writePersistentItem(SURPRISE_PROGRESS_KEY, JSON.stringify(nextProgress));
     setNow(revealedAt);
-    setProgress(nextProgress);
+    onProgressChange(nextProgress);
   };
 
   if (!open) return null;
@@ -990,41 +1058,40 @@ function ResetConfirmation({ open, onCancel, onConfirm }) {
 }
 
 function App() {
-  const [experience, setExperience] = useState(readExperienceProgress);
+  const [progress, setProgress] = useState(readDurableProgress);
   const [finaleOpen, setFinaleOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [runId, setRunId] = useState(0);
   const music = useBirthdayMusic();
 
-  const updateExperience = (updater) => {
-    setExperience((current) => {
+  const updateProgress = (updater) => {
+    setProgress((current) => {
       const next = typeof updater === "function"
         ? updater(current)
         : { ...current, ...updater };
-      saveExperienceProgress(next);
-      return next;
+      return saveDurableProgress(next);
     });
   };
 
-  const persistExperienceCheckpoint = (patch) => {
-    saveExperienceProgress({ ...experience, ...patch });
+  const persistProgressCheckpoint = (patch) => {
+    saveDurableProgress({ ...progress, ...patch });
   };
 
-  const invitationOpen = experience.stage === "invitation";
-  const signatureOpen = experience.stage === "signature";
-  const welcomeOpen = experience.stage === "welcome";
+  const invitationOpen = progress.stage === "invitation";
+  const signatureOpen = progress.stage === "signature";
+  const welcomeOpen = progress.stage === "welcome";
 
   const enter = () => {
-    updateExperience({ stage: "arcade" });
+    updateProgress({ stage: "arcade" });
     window.setTimeout(() => document.getElementById("top")?.focus(), 150);
   };
 
   const revealBirthday = () => {
-    updateExperience({ stage: "signature" });
+    updateProgress({ stage: "signature" });
   };
 
   const completeSignatureReveal = () => {
-    updateExperience({ stage: "welcome" });
+    updateProgress({ stage: "welcome" });
     window.setTimeout(() => document.querySelector(".welcome-card .primary-button")?.focus(), 150);
   };
 
@@ -1032,9 +1099,14 @@ function App() {
     removePersistentItem(STORAGE_KEY);
     removePersistentItem(EXPERIENCE_PROGRESS_KEY);
     removePersistentItem(SURPRISE_PROGRESS_KEY);
+    removePersistentItem(DURABLE_PROGRESS_KEY);
     music.stop();
     setResetOpen(false);
-    setExperience(createDefaultExperienceProgress());
+    setProgress({
+      ...createDefaultExperienceProgress(),
+      surpriseProgress: { revealedCount: 0, nextUnlockAt: null },
+      updatedAt: 0,
+    });
     setFinaleOpen(false);
     setRunId((value) => value + 1);
     window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
@@ -1092,23 +1164,23 @@ function App() {
             <Doodle className="hero-doodle">best viewed<br />with a full heart ↗</Doodle>
           </section>
           <MemoryMap
-            visitedIds={experience.visitedIds}
-            onVisit={(milestoneId) => updateExperience((current) => current.visitedIds.includes(milestoneId)
+            visitedIds={progress.visitedIds}
+            onVisit={(milestoneId) => updateProgress((current) => current.visitedIds.includes(milestoneId)
               ? current
               : { ...current, visitedIds: [...current.visitedIds, milestoneId] })}
           />
           <div className="chapter-break" aria-hidden="true"><span>✦</span><i /><span>♥</span><i /><span>✦</span></div>
           <Quiz
-            unlocked={experience.unlocked}
-            current={experience.quizCurrent}
-            onPersistCheckpoint={persistExperienceCheckpoint}
-            onAdvance={(quizCurrent) => updateExperience({ quizCurrent })}
-            onUnlock={() => updateExperience({
+            unlocked={progress.unlocked}
+            current={progress.quizCurrent}
+            onPersistCheckpoint={persistProgressCheckpoint}
+            onAdvance={(quizCurrent) => updateProgress({ quizCurrent })}
+            onUnlock={() => updateProgress({
               quizCurrent: memoryData.quizQuestions.length,
               unlocked: true,
             })}
           />
-          {experience.unlocked ? <LoveLetter onFinale={() => setFinaleOpen(true)} /> : <LockedSecret />}
+          {progress.unlocked ? <LoveLetter onFinale={() => setFinaleOpen(true)} /> : <LockedSecret />}
         </main>
         <footer>
           <p>Made for {memoryData.site.herNickname}, by {memoryData.site.yourName}.</p>
@@ -1124,7 +1196,16 @@ function App() {
           </button>
         </footer>
       </div>
-      <AnimatePresence>{finaleOpen && <FinaleModal open={finaleOpen} onClose={() => setFinaleOpen(false)} />}</AnimatePresence>
+      <AnimatePresence>
+        {finaleOpen && (
+          <FinaleModal
+            open={finaleOpen}
+            onClose={() => setFinaleOpen(false)}
+            progress={progress.surpriseProgress}
+            onProgressChange={(surpriseProgress) => updateProgress({ surpriseProgress })}
+          />
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {resetOpen && <ResetConfirmation open={resetOpen} onCancel={() => setResetOpen(false)} onConfirm={thanosReset} />}
       </AnimatePresence>

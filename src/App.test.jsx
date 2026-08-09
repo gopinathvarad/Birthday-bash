@@ -62,6 +62,7 @@ describe("Memory Arcade", () => {
     fireEvent.click(screen.getByRole("button", { name: "Dogs" }));
     const savedExperience = JSON.parse(localStorage.getItem("memory-arcade-experience-progress-v1"));
     expect(savedExperience.quizCurrent).toBe(1);
+    expect(JSON.parse(localStorage.getItem("ritika-memory-arcade-progress-v2")).quizCurrent).toBe(1);
 
     firstVisit.unmount();
     render(<App />);
@@ -136,6 +137,8 @@ describe("Memory Arcade", () => {
     expect(screen.getByRole("button", { name: /surprise 3 is locked/i })).toBeDisabled();
     const restoredProgress = JSON.parse(localStorage.getItem("memory-arcade-surprise-progress-v1"));
     expect(restoredProgress.nextUnlockAt).toBe(savedProgress.nextUnlockAt);
+    expect(JSON.parse(localStorage.getItem("ritika-memory-arcade-progress-v2")).surpriseProgress.nextUnlockAt)
+      .toBe(savedProgress.nextUnlockAt);
   });
 
   it("restores the exact timer from its durable cookie backup after browser storage is lost", () => {
@@ -190,8 +193,10 @@ describe("Memory Arcade", () => {
     expect(localStorage.getItem("memory-arcade-unlocked")).toBeNull();
     expect(localStorage.getItem("memory-arcade-experience-progress-v1")).toBeNull();
     expect(localStorage.getItem("memory-arcade-surprise-progress-v1")).toBeNull();
+    expect(localStorage.getItem("ritika-memory-arcade-progress-v2")).toBeNull();
     expect(document.cookie).not.toContain("memory-arcade-experience-progress-v1");
     expect(document.cookie).not.toContain("memory-arcade-surprise-progress-v1");
+    expect(document.cookie).not.toContain("ritika-memory-arcade-progress-v2");
     expect(screen.getByRole("heading", { name: /a mysterious invitation has arrived/i })).toBeInTheDocument();
     expect(document.querySelector('[aria-label="0 of 5 questions complete"]')).toBeInTheDocument();
     expect(screen.getByText("♥ 0 / 7 visited")).toBeInTheDocument();
