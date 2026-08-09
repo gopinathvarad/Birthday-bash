@@ -58,8 +58,9 @@ The production build is written to `dist/`.
 
 Most editable content lives in `src/memoryData.js`. Quiz answer indexes are zero-based: `0` is the first option, `1` the second, and `2` the third.
 
-The experience uses these browser storage keys:
+The experience uses one authoritative, versioned browser-local progress record and mirrors the earlier keys for seamless migration:
 
+- `ritika-memory-arcade-progress-v2` — authoritative opening, memory, quiz, reveal, and absolute countdown state
 - `memory-arcade-experience-progress-v1` — opening stage, visited memories, and partial quiz progress
 - `memory-arcade-unlocked` — quiz completion
 - `memory-arcade-surprise-progress-v1` — revealed ticket count and next unlock time
