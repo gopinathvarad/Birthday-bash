@@ -4,7 +4,6 @@ import { memoryData, publicAsset } from "./memoryData";
 
 const STORAGE_KEY = "memory-arcade-unlocked";
 const SURPRISE_PROGRESS_KEY = "memory-arcade-surprise-progress-v1";
-const FIRST_SURPRISE_WAIT_MS = 9 * 60 * 60 * 1000;
 const FOLLOWUP_SURPRISE_WAIT_MS = 60 * 60 * 1000;
 
 function readSurpriseProgress() {
@@ -14,7 +13,7 @@ function readSurpriseProgress() {
       memoryData.finaleTickets.length,
       Math.max(0, Number.isInteger(saved?.revealedCount) ? saved.revealedCount : 0),
     );
-    const nextUnlockAt = revealedCount > 0 && revealedCount < memoryData.finaleTickets.length
+    const nextUnlockAt = revealedCount > 1 && revealedCount < memoryData.finaleTickets.length
       && Number.isFinite(saved?.nextUnlockAt)
       ? saved.nextUnlockAt
       : null;
@@ -694,20 +693,19 @@ function FinaleModal({ open, onClose }) {
   const allRevealed = progress.revealedCount >= totalSurprises;
   const waitRemaining = progress.nextUnlockAt ? Math.max(0, progress.nextUnlockAt - now) : 0;
   const canRevealNext = !allRevealed
-    && (progress.revealedCount === 0 || !progress.nextUnlockAt || waitRemaining === 0);
+    && (progress.revealedCount <= 1 || !progress.nextUnlockAt || waitRemaining === 0);
   const nextNumber = progress.revealedCount + 1;
-  const isWandToSecondWait = progress.revealedCount === 1;
 
   const revealNext = () => {
     if (!canRevealNext) return;
     const revealedAt = Date.now();
     const revealedCount = Math.min(totalSurprises, progress.revealedCount + 1);
-    const waitDuration = revealedCount === 1
-      ? FIRST_SURPRISE_WAIT_MS
-      : FOLLOWUP_SURPRISE_WAIT_MS;
+    const waitDuration = revealedCount <= 1 ? 0 : FOLLOWUP_SURPRISE_WAIT_MS;
     const nextProgress = {
       revealedCount,
-      nextUnlockAt: revealedCount < totalSurprises ? revealedAt + waitDuration : null,
+      nextUnlockAt: revealedCount < totalSurprises && waitDuration > 0
+        ? revealedAt + waitDuration
+        : null,
     };
     try {
       localStorage.setItem(SURPRISE_PROGRESS_KEY, JSON.stringify(nextProgress));
@@ -776,7 +774,7 @@ function FinaleModal({ open, onClose }) {
                   <p>{nextNumber === 1
                     ? "The first ticket is yours immediately."
                     : nextNumber === 2
-                      ? "The nine-hour spell has lifted. Tap when you are ready."
+                      ? "The second ticket is ready immediately too. Tap when you are ready."
                       : "The one-hour spell has lifted. Tap when you are ready."}</p>
                   <button type="button" className="primary-button" onClick={revealNext}>
                     Reveal surprise {nextNumber} of {totalSurprises} ✦
@@ -785,7 +783,7 @@ function FinaleModal({ open, onClose }) {
               ) : (
                 <>
                   <span className="unlock-icon" aria-hidden="true">⌛</span>
-                  <p className="eyebrow">{isWandToSecondWait ? "Nine-hour mystery lock" : "One-hour mystery lock"}</p>
+                  <p className="eyebrow">One-hour mystery lock</p>
                   <h3>Next surprise unlocks in</h3>
                   <time className="surprise-countdown" dateTime={`PT${Math.ceil(waitRemaining / 1000)}S`}>
                     {formatCountdown(waitRemaining)}

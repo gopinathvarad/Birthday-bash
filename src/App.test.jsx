@@ -69,7 +69,7 @@ describe("Memory Arcade", () => {
     expect(screen.getByRole("button", { name: /play magical birthday music/i })).toBeInTheDocument();
   });
 
-  it("reveals the wand first and starts the nine-hour lock", () => {
+  it("reveals the wand first and makes The Shard immediately available", () => {
     localStorage.setItem("memory-arcade-unlocked", "true");
     render(<App />);
     enterArcade();
@@ -78,21 +78,19 @@ describe("Memory Arcade", () => {
     expect(screen.getByRole("dialog", { name: "Five surprises for Ritika" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /reveal surprise 1 of 5/i }));
     expect(screen.getByRole("heading", { name: "The Wand Chooses Ritika" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /surprise 2 is locked/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /reveal surprise 2 of 5/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /save \/ print all tickets/i })).not.toBeInTheDocument();
 
     const savedProgress = JSON.parse(localStorage.getItem("memory-arcade-surprise-progress-v1"));
     expect(savedProgress.revealedCount).toBe(1);
-    const remaining = savedProgress.nextUnlockAt - Date.now();
-    expect(remaining).toBeGreaterThan(8.99 * 60 * 60 * 1000);
-    expect(remaining).toBeLessThanOrEqual(9 * 60 * 60 * 1000);
+    expect(savedProgress.nextUnlockAt).toBeNull();
   });
 
-  it("allows the Shard reveal when the saved first lock has elapsed, then starts a one-hour lock", () => {
+  it("ignores an old first lock, reveals The Shard, then starts a one-hour lock", () => {
     localStorage.setItem("memory-arcade-unlocked", "true");
     localStorage.setItem("memory-arcade-surprise-progress-v1", JSON.stringify({
       revealedCount: 1,
-      nextUnlockAt: Date.now() - 1000,
+      nextUnlockAt: Date.now() + 9 * 60 * 60 * 1000,
     }));
     render(<App />);
     enterArcade();
