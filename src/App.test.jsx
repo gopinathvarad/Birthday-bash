@@ -11,6 +11,7 @@ const revealInvitation = () => {
 };
 
 const enterArcade = () => {
+  if (!screen.queryByRole("heading", { name: /a mysterious invitation has arrived/i })) return;
   revealInvitation();
   fireEvent.click(screen.getByRole("button", { name: /start your birthday adventure/i }));
 };
@@ -47,6 +48,25 @@ describe("Memory Arcade", () => {
     await waitFor(() => {
       expect(screen.queryByRole("dialog", { name: "New Year in Scotland" })).not.toBeInTheDocument();
     });
+  });
+
+  it("restores the opening stage, visited memories, and partial quiz progress after a refresh", () => {
+    const firstVisit = render(<App />);
+    enterArcade();
+    fireEvent.click(screen.getByRole("button", { name: /open memory 01/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Close memory" }));
+    fireEvent.click(screen.getByRole("button", { name: "Dogs" }));
+    const savedExperience = JSON.parse(localStorage.getItem("memory-arcade-experience-progress-v1"));
+    expect(savedExperience.quizCurrent).toBe(1);
+
+    firstVisit.unmount();
+    render(<App />);
+
+    expect(screen.queryByRole("heading", { name: /a mysterious invitation has arrived/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Ritika's Memory Arcade" })).toBeInTheDocument();
+    expect(screen.getByText("♥ 1 / 7 visited")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /which of our trips did ritika enjoy the most/i })).toBeInTheDocument();
+    expect(document.querySelector('[aria-label="1 of 5 questions complete"]')).toBeInTheDocument();
   });
 
   it("offers a gentle hint after an incorrect quiz answer", () => {
@@ -86,13 +106,13 @@ describe("Memory Arcade", () => {
     expect(savedProgress.nextUnlockAt).toBeNull();
   });
 
-  it("ignores an old first lock, reveals The Shard, then starts a one-hour lock", () => {
+  it("ignores an old first lock, reveals The Shard, then preserves its one-hour lock after refresh", () => {
     localStorage.setItem("memory-arcade-unlocked", "true");
     localStorage.setItem("memory-arcade-surprise-progress-v1", JSON.stringify({
       revealedCount: 1,
       nextUnlockAt: Date.now() + 9 * 60 * 60 * 1000,
     }));
-    render(<App />);
+    const firstVisit = render(<App />);
     enterArcade();
     fireEvent.click(screen.getByRole("button", { name: /reveal all five surprises/i }));
     fireEvent.click(screen.getByRole("button", { name: /reveal surprise 2 of 5/i }));
@@ -104,6 +124,14 @@ describe("Memory Arcade", () => {
     expect(savedProgress.revealedCount).toBe(2);
     expect(remaining).toBeGreaterThan(59 * 60 * 1000);
     expect(remaining).toBeLessThanOrEqual(60 * 60 * 1000);
+
+    firstVisit.unmount();
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /reveal all five surprises/i }));
+    expect(screen.getByRole("heading", { name: "A Date Above London" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /surprise 3 is locked/i })).toBeDisabled();
+    const restoredProgress = JSON.parse(localStorage.getItem("memory-arcade-surprise-progress-v1"));
+    expect(restoredProgress.nextUnlockAt).toBe(savedProgress.nextUnlockAt);
   });
 
   it("uses the Thanos reset to erase quiz and timer progress and return to question one", async () => {
@@ -134,6 +162,7 @@ describe("Memory Arcade", () => {
     fireEvent.click(screen.getByRole("button", { name: /yes, erase everything/i }));
 
     expect(localStorage.getItem("memory-arcade-unlocked")).toBeNull();
+    expect(localStorage.getItem("memory-arcade-experience-progress-v1")).toBeNull();
     expect(localStorage.getItem("memory-arcade-surprise-progress-v1")).toBeNull();
     expect(screen.getByRole("heading", { name: /a mysterious invitation has arrived/i })).toBeInTheDocument();
     expect(document.querySelector('[aria-label="0 of 5 questions complete"]')).toBeInTheDocument();

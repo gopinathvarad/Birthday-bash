@@ -3,8 +3,56 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { memoryData, publicAsset } from "./memoryData";
 
 const STORAGE_KEY = "memory-arcade-unlocked";
+const EXPERIENCE_PROGRESS_KEY = "memory-arcade-experience-progress-v1";
 const SURPRISE_PROGRESS_KEY = "memory-arcade-surprise-progress-v1";
 const FOLLOWUP_SURPRISE_WAIT_MS = 60 * 60 * 1000;
+const EXPERIENCE_STAGES = new Set(["invitation", "signature", "welcome", "arcade"]);
+
+function createDefaultExperienceProgress() {
+  return {
+    stage: "invitation",
+    visitedIds: [],
+    quizCurrent: 0,
+    unlocked: false,
+  };
+}
+
+function readExperienceProgress() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(EXPERIENCE_PROGRESS_KEY) || "null");
+    const legacyUnlocked = localStorage.getItem(STORAGE_KEY) === "true";
+    const unlocked = Boolean(saved?.unlocked || legacyUnlocked);
+    const validMilestoneIds = new Set(memoryData.milestones.map((milestone) => milestone.id));
+    const visitedIds = Array.isArray(saved?.visitedIds)
+      ? [...new Set(saved.visitedIds.filter((id) => validMilestoneIds.has(id)))]
+      : [];
+    const maximumQuestion = unlocked
+      ? memoryData.quizQuestions.length
+      : memoryData.quizQuestions.length - 1;
+    const quizCurrent = Math.min(
+      maximumQuestion,
+      Math.max(0, Number.isInteger(saved?.quizCurrent) ? saved.quizCurrent : 0),
+    );
+    const stage = EXPERIENCE_STAGES.has(saved?.stage)
+      ? saved.stage
+      : legacyUnlocked
+        ? "arcade"
+        : "invitation";
+
+    return { stage, visitedIds, quizCurrent, unlocked };
+  } catch {
+    return createDefaultExperienceProgress();
+  }
+}
+
+function saveExperienceProgress(progress) {
+  try {
+    localStorage.setItem(EXPERIENCE_PROGRESS_KEY, JSON.stringify(progress));
+    if (progress.unlocked) localStorage.setItem(STORAGE_KEY, "true");
+  } catch {
+    // Progress still works for this visit if browser storage is unavailable.
+  }
+}
 
 function readSurpriseProgress() {
   try {
@@ -419,12 +467,12 @@ function StoryModal({ milestone, onClose }) {
   );
 }
 
-function MemoryMap() {
+function MemoryMap({ visitedIds, onVisit }) {
   const [selected, setSelected] = useState(null);
-  const [visited, setVisited] = useState(() => new Set());
+  const visited = useMemo(() => new Set(visitedIds), [visitedIds]);
 
   const openMemory = (milestone) => {
-    setVisited((current) => new Set([...current, milestone.id]));
+    onVisit(milestone.id);
     setSelected(milestone);
   };
 
@@ -487,8 +535,7 @@ function LockedSecret() {
   );
 }
 
-function Quiz({ unlocked, setUnlocked }) {
-  const [current, setCurrent] = useState(0);
+function Quiz({ unlocked, current, onPersistCheckpoint, onAdvance, onUnlock }) {
   const [feedback, setFeedback] = useState(null);
   const [transitioning, setTransitioning] = useState(false);
   const question = memoryData.quizQuestions[current];
@@ -502,12 +549,16 @@ function Quiz({ unlocked, setUnlocked }) {
     }
     setFeedback({ type: "right", text: question.success });
     setTransitioning(true);
+    const isFinalQuestion = current === memoryData.quizQuestions.length - 1;
+    const checkpoint = isFinalQuestion
+      ? { quizCurrent: memoryData.quizQuestions.length, unlocked: true }
+      : { quizCurrent: current + 1 };
+    onPersistCheckpoint(checkpoint);
     window.setTimeout(() => {
-      if (current === memoryData.quizQuestions.length - 1) {
-        localStorage.setItem(STORAGE_KEY, "true");
-        setUnlocked(true);
+      if (isFinalQuestion) {
+        onUnlock();
       } else {
-        setCurrent((value) => value + 1);
+        onAdvance(current + 1);
         setFeedback(null);
         setTransitioning(false);
       }
@@ -876,50 +927,56 @@ function ResetConfirmation({ open, onCancel, onConfirm }) {
 }
 
 function App() {
-  const [invitationOpen, setInvitationOpen] = useState(true);
-  const [signatureOpen, setSignatureOpen] = useState(false);
-  const [welcomeOpen, setWelcomeOpen] = useState(true);
-  const [unlocked, setUnlocked] = useState(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEY) === "true";
-    } catch {
-      return false;
-    }
-  });
+  const [experience, setExperience] = useState(readExperienceProgress);
   const [finaleOpen, setFinaleOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [runId, setRunId] = useState(0);
   const music = useBirthdayMusic();
 
+  const updateExperience = (updater) => {
+    setExperience((current) => {
+      const next = typeof updater === "function"
+        ? updater(current)
+        : { ...current, ...updater };
+      saveExperienceProgress(next);
+      return next;
+    });
+  };
+
+  const persistExperienceCheckpoint = (patch) => {
+    saveExperienceProgress({ ...experience, ...patch });
+  };
+
+  const invitationOpen = experience.stage === "invitation";
+  const signatureOpen = experience.stage === "signature";
+  const welcomeOpen = experience.stage === "welcome";
+
   const enter = () => {
-    setWelcomeOpen(false);
+    updateExperience({ stage: "arcade" });
     window.setTimeout(() => document.getElementById("top")?.focus(), 150);
   };
 
   const revealBirthday = () => {
-    setInvitationOpen(false);
-    setSignatureOpen(true);
+    updateExperience({ stage: "signature" });
   };
 
   const completeSignatureReveal = () => {
-    setSignatureOpen(false);
+    updateExperience({ stage: "welcome" });
     window.setTimeout(() => document.querySelector(".welcome-card .primary-button")?.focus(), 150);
   };
 
   const thanosReset = () => {
     try {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(EXPERIENCE_PROGRESS_KEY);
       localStorage.removeItem(SURPRISE_PROGRESS_KEY);
     } catch {
       // The in-memory reset still works when browser storage is unavailable.
     }
     music.stop();
     setResetOpen(false);
-    setUnlocked(false);
+    setExperience(createDefaultExperienceProgress());
     setFinaleOpen(false);
-    setSignatureOpen(false);
-    setInvitationOpen(true);
-    setWelcomeOpen(true);
     setRunId((value) => value + 1);
     window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -975,10 +1032,24 @@ function App() {
             </div>
             <Doodle className="hero-doodle">best viewed<br />with a full heart ↗</Doodle>
           </section>
-          <MemoryMap />
+          <MemoryMap
+            visitedIds={experience.visitedIds}
+            onVisit={(milestoneId) => updateExperience((current) => current.visitedIds.includes(milestoneId)
+              ? current
+              : { ...current, visitedIds: [...current.visitedIds, milestoneId] })}
+          />
           <div className="chapter-break" aria-hidden="true"><span>✦</span><i /><span>♥</span><i /><span>✦</span></div>
-          <Quiz unlocked={unlocked} setUnlocked={setUnlocked} />
-          {unlocked ? <LoveLetter onFinale={() => setFinaleOpen(true)} /> : <LockedSecret />}
+          <Quiz
+            unlocked={experience.unlocked}
+            current={experience.quizCurrent}
+            onPersistCheckpoint={persistExperienceCheckpoint}
+            onAdvance={(quizCurrent) => updateExperience({ quizCurrent })}
+            onUnlock={() => updateExperience({
+              quizCurrent: memoryData.quizQuestions.length,
+              unlocked: true,
+            })}
+          />
+          {experience.unlocked ? <LoveLetter onFinale={() => setFinaleOpen(true)} /> : <LockedSecret />}
         </main>
         <footer>
           <p>Made for {memoryData.site.herNickname}, by {memoryData.site.yourName}.</p>
